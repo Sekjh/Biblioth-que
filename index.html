@@ -53,7 +53,9 @@
     flex-direction: column; align-items: center; justify-content: center;
   }
   #scanner-overlay.active { display: flex; }
-  #scanner-video { width: 100%; max-width: 480px; }
+  #scanner-viewport { width: 100%; max-width: 480px; position: relative; }
+  #scanner-viewport video { width: 100%; display: block; }
+  #scanner-viewport canvas { display: none; }
   #scanner-frame {
     position: absolute; width: 250px; height: 90px;
     border: 2px solid rgba(255,255,255,0.9); border-radius: 8px;
@@ -74,7 +76,7 @@
 
 <div id="scanner-overlay">
   <button id="scanner-close" onclick="closeScanner()" aria-label="Fermer">✕</button>
-  <video id="scanner-video" autoplay playsinline muted></video>
+  <div id="scanner-viewport"></div>
   <div id="scanner-frame"></div>
   <p id="scanner-hint">Centre le code-barres dans le cadre</p>
   <p id="scanner-msg"></p>
@@ -83,7 +85,7 @@
 <input type="file" id="file-input" accept="image/*" capture="environment">
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.6 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.7 — 24052026</span></h1>
 
   <div class="card">
     <button class="outline scan-btn" onclick="startScan()">
@@ -210,6 +212,11 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.7</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Scanner : Quagga2 gère désormais son propre conteneur vidéo (div viewport) — corrige l'écran noir sur Brave iOS</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.6</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Correction scanner Quagga2 : la caméra est désormais entièrement gérée par Quagga2 (plus de conflit de flux vidéo)</div>
@@ -314,7 +321,12 @@ async function startScan() {
         : 'Caméra inaccessible. Saisis l\'ISBN manuellement.');
       return;
     }
-    const video = document.getElementById('scanner-video');
+    const vp = document.getElementById('scanner-viewport');
+    const video = document.createElement('video');
+    video.autoplay = true; video.playsInline = true; video.muted = true;
+    video.style.width = '100%';
+    vp.innerHTML = '';
+    vp.appendChild(video);
     video.srcObject = stream;
     await video.play();
     document.getElementById('scanner-overlay').classList.add('active');
@@ -335,7 +347,7 @@ async function startScan() {
   Quagga.init({
     inputStream: {
       type: 'LiveStream',
-      target: document.getElementById('scanner-video'),
+      target: document.getElementById('scanner-viewport'),
       constraints: { facingMode: { ideal:'environment' } },
       area: { top:'20%', right:'10%', bottom:'20%', left:'10%' }
     },
@@ -346,7 +358,6 @@ async function startScan() {
     if (err) {
       document.getElementById('scanner-overlay').classList.remove('active');
       usingQuagga = false;
-      // Quagga a aussi échoué → photo unique
       useCaptureInput();
       return;
     }
@@ -421,8 +432,10 @@ function closeScanner() {
   if (scanLoop) { clearInterval(scanLoop); scanLoop = null; }
   if (usingQuagga) { try { Quagga.stop(); } catch(e) {} usingQuagga = false; }
   if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  const v = document.getElementById('scanner-video');
-  v.srcObject = null;
+  // Vider le viewport
+  const vp = document.getElementById('scanner-viewport');
+  const vid = vp.querySelector('video');
+  if (vid) { vid.srcObject = null; }
 }
 
 // ── LOOKUP ─────────────────────────────────────────────
