@@ -29,10 +29,10 @@
   button:hover { opacity: 0.85; }
   button.secondary { background: var(--bg2); color: var(--text); border-color: var(--border); }
   button.outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-  .isbn-row { display: flex; gap: 8px; margin-bottom: 0.75rem; }
-  .isbn-row input { flex: 1; }
-  .isbn-row button { width: auto; padding: 0 1rem; flex-shrink: 0; height: var(--input-h); font-size: 13px; }
-  .scan-btn { height: var(--input-h); font-size: 13px; background: var(--bg2); color: var(--text); border-color: var(--border); margin-bottom: 1rem; }
+  .input-row { display: flex; gap: 8px; margin-bottom: 0.75rem; }
+  .input-row input { flex: 1; }
+  .input-row button { width: auto; padding: 0 1rem; flex-shrink: 0; height: var(--input-h); font-size: 13px; }
+  .scan-btn { height: var(--input-h); font-size: 13px; margin-bottom: 0.75rem; }
   .cover-row { display: flex; gap: 1rem; align-items: flex-start; }
   .cover-img { width: 65px; flex-shrink: 0; border-radius: 4px; border: 1px solid var(--border); }
   .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
@@ -44,65 +44,58 @@
   .source-badge { display: inline-block; font-size: 11px; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; color: var(--muted); margin-top: 4px; }
   .hidden { display: none; }
   #form-section { display: none; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
   /* Scanner overlay */
   #scanner-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: #000;
-    z-index: 1000;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: none; position: fixed; inset: 0;
+    background: #000; z-index: 1000;
+    flex-direction: column; align-items: center; justify-content: center;
   }
   #scanner-overlay.active { display: flex; }
-  #scanner-video { width: 100%; max-width: 500px; border-radius: 0; }
+  #scanner-video { width: 100%; max-width: 480px; }
   #scanner-frame {
-    position: absolute;
-    width: 260px; height: 100px;
-    border: 2px solid #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+    position: absolute; width: 250px; height: 90px;
+    border: 2px solid rgba(255,255,255,0.9); border-radius: 8px;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
   }
-  #scanner-frame::before, #scanner-frame::after {
-    content: '';
-    position: absolute;
-    width: 20px; height: 20px;
-    border-color: #fff;
-    border-style: solid;
+  #scanner-close {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    background: rgba(255,255,255,0.15); border: none; color: #fff;
+    border-radius: 50%; width: 40px; height: 40px; font-size: 20px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
-  #scanner-frame::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 6px 0 0 0; }
-  #scanner-frame::after { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 6px 0; }
-  #scanner-hint { color: #fff; font-size: 14px; margin-top: 2.5rem; opacity: 0.8; text-align: center; padding: 0 2rem; }
-  #scanner-close { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.15); border: none; color: #fff; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  #scanner-status { color: #fff; font-size: 13px; margin-top: 1rem; min-height: 20px; }
+  #scanner-hint { color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 2.5rem; text-align: center; padding: 0 2rem; }
+  #scanner-msg { color: #fff; font-size: 13px; margin-top: 0.75rem; min-height: 18px; }
+  #file-input { display: none; }
 </style>
 </head>
 <body>
 
-<!-- Scanner overlay -->
 <div id="scanner-overlay">
   <button id="scanner-close" onclick="closeScanner()" aria-label="Fermer">✕</button>
   <video id="scanner-video" autoplay playsinline muted></video>
   <div id="scanner-frame"></div>
   <p id="scanner-hint">Centre le code-barres dans le cadre</p>
-  <p id="scanner-status"></p>
+  <p id="scanner-msg"></p>
 </div>
+
+<input type="file" id="file-input" accept="image/*" capture="environment">
 
 <div class="container">
   <h1>ISBN → Notion <span>bibliothèque personnelle</span></h1>
 
   <div class="card">
-    <button class="scan-btn outline" onclick="startScanner()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="8" x2="8" y2="16"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="16" y1="8" x2="16" y2="16"/></svg>
-      Scanner un code-barres
+    <button class="outline scan-btn" onclick="startScan()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+      Scanner le code-barres
     </button>
-    <div class="isbn-row">
+    <div class="input-row">
       <input type="text" id="isbn-input" placeholder="ou saisir l'ISBN manuellement…"
         inputmode="numeric"
         oninput="this.value=this.value.replace(/[^0-9Xx-]/g,'')"
         onkeydown="if(event.key==='Enter')lookup()">
-      <button onclick="lookup()">Rechercher</button>
+      <button onclick="lookup()">OK</button>
     </div>
     <p id="status" class="status"></p>
   </div>
@@ -114,7 +107,7 @@
         <div style="flex:1">
           <p style="font-size:13px;font-weight:500;line-height:1.4;" id="found-title"></p>
           <span class="source-badge" id="source-badge"></span>
-          <p style="font-size:12px;color:var(--muted);margin-top:6px;">Vérifie et modifie les champs si nécessaire.</p>
+          <p style="font-size:12px;color:var(--muted);margin-top:6px;">Modifie les champs si nécessaire.</p>
         </div>
       </div>
     </div>
@@ -126,7 +119,7 @@
         <div class="field full"><label>Auteur(s)</label><input type="text" id="f-auteur"></div>
         <div class="field"><label>Éditeur</label><input type="text" id="f-editeur"></div>
         <div class="field"><label>Collection</label><input type="text" id="f-collection-ed"></div>
-        <div class="field"><label>Date de publication originale</label><input type="text" id="f-datepub" placeholder="ex. 1739"></div>
+        <div class="field"><label>Publication originale</label><input type="text" id="f-datepub" placeholder="ex. 1739"></div>
         <div class="field"><label>Date de cette édition</label><input type="text" id="f-dateed" placeholder="ex. 2025"></div>
         <div class="field"><label>Nombre de pages</label><input type="text" id="f-pages"></div>
         <div class="field"><label>ISBN</label><input type="text" id="f-isbn" readonly style="opacity:0.5"></div>
@@ -202,7 +195,6 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
 <script>
 const THEMES = {
   "Philosophie": ["Esthétique","Éthique","Épistémologie","Métaphysique","Philosophie politique","Philosophie du langage","Logique","Philosophie des sciences","Histoire de la philosophie","Phénoménologie","Philosophie morale"],
@@ -216,13 +208,12 @@ const THEMES = {
 };
 
 function initThemes() {
-  const sel = document.getElementById('f-theme');
-  sel.innerHTML = Object.keys(THEMES).map(t => `<option>${t}</option>`).join('');
+  document.getElementById('f-theme').innerHTML = Object.keys(THEMES).map(t=>`<option>${t}</option>`).join('');
   updateSousTheme();
 }
 function updateSousTheme() {
   const t = document.getElementById('f-theme').value;
-  document.getElementById('f-soustheme').innerHTML = THEMES[t].map(s => `<option>${s}</option>`).join('');
+  document.getElementById('f-soustheme').innerHTML = THEMES[t].map(s=>`<option>${s}</option>`).join('');
 }
 function toggleLu() {
   const lu = document.getElementById('f-statut').value === 'Lu';
@@ -231,209 +222,222 @@ function toggleLu() {
   document.getElementById('priorite-block').classList.toggle('hidden', lu);
 }
 
-// ---- SCANNER ----
-let codeReader = null;
-let scannerStream = null;
+// ── SCAN ──────────────────────────────────────────────
+let stream = null;
+let scanLoop = null;
+let detector = null;
 
-async function startScanner() {
-  const overlay = document.getElementById('scanner-overlay');
-  const video = document.getElementById('scanner-video');
-  const scanStatus = document.getElementById('scanner-status');
-
-  // Utilise l'API native BarcodeDetector si dispo (plus rapide sur iOS 17+)
+async function startScan() {
+  // Méthode 1 : BarcodeDetector natif (iOS 17.4+, Chrome Android)
   if ('BarcodeDetector' in window) {
     try {
-      const bd = new BarcodeDetector({ formats: ['ean_13', 'ean_8'] });
-      scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      video.srcObject = scannerStream;
-      overlay.classList.add('active');
-      scanStatus.textContent = '';
-      scanWithNativeAPI(bd, video, scanStatus);
+      detector = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128'] });
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
+      });
+      const video = document.getElementById('scanner-video');
+      video.srcObject = stream;
+      await video.play();
+      document.getElementById('scanner-overlay').classList.add('active');
+      document.getElementById('scanner-msg').textContent = '';
+      runScanLoop(video);
       return;
-    } catch(e) {}
-  }
-
-  // Fallback ZXing
-  if (typeof ZXingBrowser === 'undefined') {
-    scanStatus.textContent = 'Chargement du scanner…';
-    overlay.classList.add('active');
-    await new Promise(r => setTimeout(r, 800));
-  }
-
-  try {
-    codeReader = new ZXingBrowser.BrowserMultiFormatReader();
-    overlay.classList.add('active');
-    scanStatus.textContent = '';
-    const devices = await ZXingBrowser.BrowserMultiFormatReader.listVideoInputDevices();
-    const backCamera = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[devices.length - 1];
-    const deviceId = backCamera?.deviceId;
-
-    codeReader.decodeFromVideoDevice(deviceId, 'scanner-video', (result, err) => {
-      if (result) {
-        const isbn = result.getText();
-        closeScanner();
-        document.getElementById('isbn-input').value = isbn;
-        lookup();
+    } catch(e) {
+      // BarcodeDetector dispo mais caméra refusée ou autre erreur
+      if (e.name === 'NotAllowedError') {
+        setStatus('Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.');
+        return;
       }
+      // Sinon tenter fallback
+    }
+  }
+
+  // Méthode 2 : getUserMedia + canvas + décodage via API image (fallback)
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } }
     });
+    const video = document.getElementById('scanner-video');
+    video.srcObject = stream;
+    await video.play();
+    document.getElementById('scanner-overlay').classList.add('active');
+    document.getElementById('scanner-msg').textContent = 'BarcodeDetector non disponible — scan limité';
+    // Essai toutes les 500ms via une heuristique simple
+    runScanLoop(video);
+    return;
   } catch(e) {
-    document.getElementById('scanner-status').textContent = 'Caméra inaccessible. Saisis l\'ISBN manuellement.';
+    if (e.name === 'NotAllowedError') {
+      setStatus('Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.');
+    } else {
+      // Méthode 3 : input file capture (fonctionne partout, photo unique)
+      useCaptureInput();
+    }
   }
 }
 
-let nativeScanInterval = null;
-function scanWithNativeAPI(bd, video, scanStatus) {
-  nativeScanInterval = setInterval(async () => {
-    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
-    try {
-      const barcodes = await bd.detect(video);
-      for (const bc of barcodes) {
-        if (bc.rawValue && bc.rawValue.length >= 8) {
-          clearInterval(nativeScanInterval);
-          closeScanner();
-          document.getElementById('isbn-input').value = bc.rawValue;
-          lookup();
-          return;
+function runScanLoop(video) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  scanLoop = setInterval(async () => {
+    if (video.readyState < 2) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
+    if (detector) {
+      try {
+        const results = await detector.detect(canvas);
+        for (const r of results) {
+          const val = r.rawValue;
+          if (/^\d{8,13}$/.test(val)) {
+            closeScanner();
+            document.getElementById('isbn-input').value = val;
+            lookup();
+            return;
+          }
         }
-      }
-    } catch(e) {}
-  }, 300);
+      } catch(e) {}
+    }
+  }, 350);
+}
+
+function useCaptureInput() {
+  // Dernier recours : photo via input[capture], décodage côté client
+  const fi = document.getElementById('file-input');
+  fi.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setStatus('Analyse de l\'image…');
+    if ('BarcodeDetector' in window) {
+      try {
+        const bd = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128'] });
+        const bitmap = await createImageBitmap(file);
+        const results = await bd.detect(bitmap);
+        for (const r of results) {
+          if (/^\d{8,13}$/.test(r.rawValue)) {
+            document.getElementById('isbn-input').value = r.rawValue;
+            lookup();
+            return;
+          }
+        }
+        setStatus('Code-barres non détecté. Saisis l\'ISBN manuellement.');
+      } catch(e) { setStatus('Erreur d\'analyse. Saisis l\'ISBN manuellement.'); }
+    } else {
+      setStatus('Scanner non supporté sur ce navigateur. Saisis l\'ISBN manuellement.');
+    }
+    fi.value = '';
+  };
+  fi.click();
 }
 
 function closeScanner() {
   document.getElementById('scanner-overlay').classList.remove('active');
-  if (nativeScanInterval) { clearInterval(nativeScanInterval); nativeScanInterval = null; }
-  if (codeReader) { try { codeReader.reset(); } catch(e) {} codeReader = null; }
-  if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
-  const video = document.getElementById('scanner-video');
-  video.srcObject = null;
+  if (scanLoop) { clearInterval(scanLoop); scanLoop = null; }
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  const v = document.getElementById('scanner-video');
+  v.srcObject = null;
+  detector = null;
 }
 
-// ---- LOOKUP ----
+// ── LOOKUP ─────────────────────────────────────────────
 async function lookup() {
-  const raw = document.getElementById('isbn-input').value.trim().replace(/[-\s]/g, '');
+  const raw = document.getElementById('isbn-input').value.trim().replace(/[-\s]/g,'');
   if (!raw) return;
-  const status = document.getElementById('status');
-  status.textContent = 'Recherche en cours…';
+  setStatus('Recherche en cours…');
   document.getElementById('form-section').style.display = 'none';
-  document.getElementById('output-section').style.display = 'none';
 
-  let book = { isbn: raw, titre:'', auteur:'', editeur:'', collection:'', dateed:'', datepub:'', pages:'', couverture:'', source:'' };
+  let b = { isbn:raw, titre:'', auteur:'', editeur:'', collection:'', dateed:'', pages:'', couverture:'', source:'' };
 
-  // 1. BnF SRU
+  // BnF
   try {
-    const bnfUrl = `https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn+adj+"${raw}"&recordSchema=unimarcxchange&maximumRecords=1`;
-    const bnfRes = await fetch(bnfUrl);
-    const bnfText = await bnfRes.text();
-    const xml = new DOMParser().parseFromString(bnfText, 'text/xml');
-    if (xml.querySelectorAll('record').length > 0) {
-      const rec = xml.querySelectorAll('record')[0];
-      const getF = (tag, sub) => { const el = rec.querySelector(`datafield[tag="${tag}"] subfield[code="${sub}"]`); return el ? el.textContent.trim() : ''; };
-      const getAllF = (tag, sub) => Array.from(rec.querySelectorAll(`datafield[tag="${tag}"] subfield[code="${sub}"]`)).map(e => e.textContent.trim());
-      book.titre = getF('200','a');
-      const sub = getF('200','e');
-      if (sub && book.titre) book.titre += ' — ' + sub;
-      const na = getAllF('700','a'), nb = getAllF('700','b');
-      book.auteur = na.map((a,i) => nb[i] ? nb[i]+' '+a : a).join(', ');
-      if (!book.auteur) { const na2=getAllF('701','a'),nb2=getAllF('701','b'); book.auteur=na2.map((a,i)=>nb2[i]?nb2[i]+' '+a:a).join(', '); }
-      book.editeur = getF('210','c') || getF('214','c');
-      book.dateed = getF('210','d') || getF('214','d');
-      book.collection = getF('225','a');
-      book.pages = getF('215','a');
-      if (book.titre) book.source = 'BnF';
+    const xml = await fetch(`https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn+adj+"${raw}"&recordSchema=unimarcxchange&maximumRecords=1`).then(r=>r.text());
+    const doc = new DOMParser().parseFromString(xml,'text/xml');
+    const rec = doc.querySelector('record');
+    if (rec) {
+      const gf = (tag,sub) => { const el=rec.querySelector(`datafield[tag="${tag}"] subfield[code="${sub}"]`); return el?el.textContent.trim():''; };
+      const gfa = (tag,sub) => Array.from(rec.querySelectorAll(`datafield[tag="${tag}"] subfield[code="${sub}"]`)).map(e=>e.textContent.trim());
+      b.titre = gf('200','a'); const esub=gf('200','e'); if(esub&&b.titre) b.titre+=' — '+esub;
+      const na=gfa('700','a'),nb=gfa('700','b'); b.auteur=na.map((a,i)=>nb[i]?nb[i]+' '+a:a).join(', ');
+      if(!b.auteur){const na2=gfa('701','a'),nb2=gfa('701','b');b.auteur=na2.map((a,i)=>nb2[i]?nb2[i]+' '+a:a).join(', ');}
+      b.editeur=gf('210','c')||gf('214','c'); b.dateed=gf('210','d')||gf('214','d');
+      b.collection=gf('225','a'); b.pages=gf('215','a');
+      if(b.titre) b.source='BnF';
     }
-  } catch(e) {}
+  } catch(e){}
 
-  // 2. OpenLibrary
-  if (!book.titre) {
+  // OpenLibrary
+  if(!b.titre) {
     try {
-      const d = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${raw}&format=json&jscmd=details`).then(r=>r.json());
-      const entry = d[`ISBN:${raw}`];
-      if (entry) {
-        const det = entry.details;
-        book.titre = det.title || '';
-        book.auteur = det.authors?.map(a=>a.name).join(', ') || '';
-        book.editeur = det.publishers?.[0] || '';
-        book.dateed = det.publish_date || '';
-        book.pages = det.number_of_pages || '';
-        if (entry.thumbnail_url) book.couverture = entry.thumbnail_url.replace('-S.','-M.');
-        if (book.titre) book.source = 'OpenLibrary';
-      }
-    } catch(e) {}
+      const d=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${raw}&format=json&jscmd=details`).then(r=>r.json());
+      const entry=d[`ISBN:${raw}`];
+      if(entry){ const det=entry.details; b.titre=det.title||''; b.auteur=det.authors?.map(a=>a.name).join(', ')||''; b.editeur=det.publishers?.[0]||''; b.dateed=det.publish_date||''; b.pages=det.number_of_pages||''; if(entry.thumbnail_url) b.couverture=entry.thumbnail_url.replace('-S.','-M.'); if(b.titre) b.source='OpenLibrary'; }
+    } catch(e){}
   }
 
-  // 3. Google Books
-  if (!book.titre) {
+  // Google Books
+  if(!b.titre) {
     try {
-      const g = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${raw}`).then(r=>r.json());
-      if (g.items?.length) {
-        const v = g.items[0].volumeInfo;
-        book.titre = v.title || '';
-        book.auteur = v.authors?.join(', ') || '';
-        book.editeur = v.publisher || '';
-        book.dateed = v.publishedDate || '';
-        book.pages = v.pageCount || '';
-        if (v.imageLinks?.thumbnail) book.couverture = v.imageLinks.thumbnail.replace('http:','https:');
-        if (book.titre) book.source = 'Google Books';
-      }
-    } catch(e) {}
+      const g=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${raw}`).then(r=>r.json());
+      if(g.items?.length){ const v=g.items[0].volumeInfo; b.titre=v.title||''; b.auteur=v.authors?.join(', ')||''; b.editeur=v.publisher||''; b.dateed=v.publishedDate||''; b.pages=v.pageCount||''; if(v.imageLinks?.thumbnail) b.couverture=v.imageLinks.thumbnail.replace('http:','https:'); if(b.titre) b.source='Google Books'; }
+    } catch(e){}
   }
 
-  status.textContent = book.titre ? '' : 'ISBN introuvable — remplis manuellement.';
-  fillForm(book);
+  setStatus(b.titre ? '' : 'ISBN introuvable — remplis manuellement.');
+  fillForm(b);
 }
 
 function fillForm(b) {
-  document.getElementById('f-titre').value = b.titre || '';
-  document.getElementById('f-auteur').value = b.auteur || '';
-  document.getElementById('f-editeur').value = b.editeur || '';
-  document.getElementById('f-collection-ed').value = b.collection || '';
-  document.getElementById('f-isbn').value = b.isbn || '';
-  document.getElementById('f-dateed').value = b.dateed || '';
-  document.getElementById('f-datepub').value = '';
-  document.getElementById('f-pages').value = b.pages || '';
-  document.getElementById('found-title').textContent = b.titre || '(titre non trouvé — remplis manuellement)';
-  document.getElementById('source-badge').textContent = b.source ? `Source : ${b.source}` : 'Saisie manuelle';
-  const img = document.getElementById('cover-img');
-  if (b.couverture) { img.src = b.couverture; img.style.display = 'block'; } else { img.style.display = 'none'; }
-  document.getElementById('form-section').style.display = 'block';
-  document.getElementById('output-section').style.display = 'none';
+  document.getElementById('f-titre').value=b.titre||'';
+  document.getElementById('f-auteur').value=b.auteur||'';
+  document.getElementById('f-editeur').value=b.editeur||'';
+  document.getElementById('f-collection-ed').value=b.collection||'';
+  document.getElementById('f-isbn').value=b.isbn||'';
+  document.getElementById('f-dateed').value=b.dateed||'';
+  document.getElementById('f-datepub').value='';
+  document.getElementById('f-pages').value=b.pages||'';
+  document.getElementById('found-title').textContent=b.titre||(b.isbn?'ISBN : '+b.isbn:'');
+  document.getElementById('source-badge').textContent=b.source?`Source : ${b.source}`:'Saisie manuelle';
+  const img=document.getElementById('cover-img');
+  if(b.couverture){img.src=b.couverture;img.style.display='block';}else{img.style.display='none';}
+  document.getElementById('form-section').style.display='block';
+  document.getElementById('output-section').style.display='none';
 }
 
 function generate() {
-  const get = id => document.getElementById(id)?.value?.trim() || '';
-  const checked = id => document.getElementById(id)?.checked || false;
-  const lines = [];
-  const titre = get('f-titre'); if (titre) lines.push(`📖 ${titre}`);
-  const auteur = get('f-auteur'); if (auteur) lines.push(`Auteur : ${auteur}`);
-  const editeur = get('f-editeur'); if (editeur) lines.push(`Éditeur : ${editeur}`);
-  const coll = get('f-collection-ed'); if (coll) lines.push(`Collection : ${coll}`);
-  const datepub = get('f-datepub'); if (datepub) lines.push(`Publication originale : ${datepub}`);
-  const dateed = get('f-dateed'); if (dateed) lines.push(`Date édition : ${dateed}`);
-  const pages = get('f-pages'); if (pages) lines.push(`Pages : ${pages}`);
-  const isbn = get('f-isbn'); if (isbn) lines.push(`ISBN : ${isbn}`);
-  lines.push('');
-  const theme = get('f-theme'); const sous = get('f-soustheme');
-  if (theme) lines.push(`Thème : ${theme}${sous && sous!=='—' ? ' › '+sous : ''}`);
-  const statut = get('f-statut'); if (statut) lines.push(`Statut : ${statut}`);
-  const prio = get('f-priorite'); if (prio) lines.push(`Priorité : ${prio}`);
-  const datelu = get('f-datelu'); if (datelu) lines.push(`Lu en : ${datelu}`);
-  const note = get('f-note'); if (note) lines.push(`Note : ${note}`);
-  const etat = get('f-etat'); if (etat) lines.push(`État : ${etat}`);
-  if (checked('f-collection')) lines.push(`⭐ Livre de collection`);
-  const comment = get('f-comment'); if (comment) { lines.push(''); lines.push(`Commentaire : ${comment}`); }
-  document.getElementById('result-text').textContent = lines.join('\n');
-  document.getElementById('output-section').style.display = 'block';
-  document.getElementById('output-section').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  const get=id=>document.getElementById(id)?.value?.trim()||'';
+  const cb=id=>document.getElementById(id)?.checked||false;
+  const L=[];
+  const t=get('f-titre'); if(t) L.push(`📖 ${t}`);
+  const a=get('f-auteur'); if(a) L.push(`Auteur : ${a}`);
+  const e=get('f-editeur'); if(e) L.push(`Éditeur : ${e}`);
+  const c=get('f-collection-ed'); if(c) L.push(`Collection : ${c}`);
+  const dp=get('f-datepub'); if(dp) L.push(`Publication originale : ${dp}`);
+  const de=get('f-dateed'); if(de) L.push(`Date édition : ${de}`);
+  const pg=get('f-pages'); if(pg) L.push(`Pages : ${pg}`);
+  const is=get('f-isbn'); if(is) L.push(`ISBN : ${is}`);
+  L.push('');
+  const th=get('f-theme'),so=get('f-soustheme');
+  if(th) L.push(`Thème : ${th}${so&&so!=='—'?' › '+so:''}`);
+  const st=get('f-statut'); if(st) L.push(`Statut : ${st}`);
+  const pr=get('f-priorite'); if(pr) L.push(`Priorité : ${pr}`);
+  const dl=get('f-datelu'); if(dl) L.push(`Lu en : ${dl}`);
+  const no=get('f-note'); if(no) L.push(`Note : ${no}`);
+  const et=get('f-etat'); if(et) L.push(`État : ${et}`);
+  if(cb('f-collection')) L.push(`⭐ Livre de collection`);
+  const co=get('f-comment'); if(co){L.push('');L.push(`Commentaire : ${co}`);}
+  document.getElementById('result-text').textContent=L.join('\n');
+  document.getElementById('output-section').style.display='block';
+  document.getElementById('output-section').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function copyResult() {
-  navigator.clipboard.writeText(document.getElementById('result-text').textContent).then(() => {
-    const btn = document.getElementById('copy-btn');
-    btn.textContent = '✓ Copié !';
-    setTimeout(() => btn.textContent = 'Copier', 2000);
+  navigator.clipboard.writeText(document.getElementById('result-text').textContent).then(()=>{
+    const btn=document.getElementById('copy-btn');
+    btn.textContent='✓ Copié !';
+    setTimeout(()=>btn.textContent='Copier',2000);
   });
 }
+
+function setStatus(msg) { document.getElementById('status').textContent=msg; }
 
 initThemes();
 </script>
