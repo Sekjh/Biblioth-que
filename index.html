@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.18 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.20 — 24052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -170,16 +170,16 @@
     <p class="section-title">Configuration Notion</p>
     <div class="field">
       <label>Token d'intégration</label>
-      <input type="password" id="cfg-token" placeholder="secret_…" style="font-family:monospace;font-size:13px;">
+      <input type="text" id="cfg-token" placeholder="secret_…" style="font-family:monospace;font-size:13px;">
     </div>
     <div class="field">
       <label>Database ID</label>
-      <input type="text" id="cfg-dbid" placeholder="32 caractères depuis l'URL Notion" style="font-family:monospace;font-size:13px;">
+      <input type="text" id="cfg-dbid" placeholder="URL Notion complète ou ID seul (32 caractères)" style="font-family:monospace;font-size:13px;">
     </div>
     <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
       Ces informations sont stockées uniquement sur cet appareil (localStorage). Elles ne sont jamais envoyées ailleurs qu'à l'API Notion.
     </p>
-    <button onclick="saveConfig()">Enregistrer</button>
+    <button onclick="saveConfig()">Vérifier et enregistrer</button>
     <p id="config-status" class="status" style="text-align:center;margin-top:6px;"></p>
   </div>
 </div>
@@ -202,47 +202,57 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Sync automatique des propriétés Notion — création des champs manquants, détection des conflits de type, messages lisibles à chaque étape</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Configuration : accepte l'URL Notion complète pour le Database ID (extraction automatique)</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Intégration API Notion — token et database ID stockés en localStorage — bouton "Envoyer dans Notion" — couverture envoyée automatiquement</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Champ nationalité auteur — thèmes et sous-thèmes revus et élargis — cases thème/sous-thème vides par défaut</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Suppression du scanner — saisie manuelle uniquement — ajout sélecteur de moteur (BnF par défaut, OpenLibrary, Google Books, Tous)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : ouverture caméra iOS native uniquement, bandeau jaune pour copier ISBN, plus de tentative de décodage automatique</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Abandon du scan temps réel (incompatible iOS 26 beta) — remplacement par photo + décodage, avec fallback vers la reconnaissance native iOS</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Ajout zbar-wasm comme fallback quand BarcodeDetector absent (iOS < 17.4, Brave)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Debug complet étape par étape : overlay ouvert en premier, message à chaque jalon (caméra, vidéo, BarcodeDetector, frames)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner : readyState abaissé de 4 à 2 — corrige le blocage de la boucle d'analyse sur Brave iOS</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="font-weight:600;color:var(--text);">v0.20</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : BarcodeDetector direct sur élément vidéo (sans canvas), debug visuel en temps réel, suppression des dépendances externes</div>
       </div>
@@ -425,20 +435,145 @@ function getConfig() {
   };
 }
 
-function saveConfig() {
+function notionHeaders(token) {
+  return {
+    'Authorization': 'Bearer ' + token,
+    'Content-Type': 'application/json',
+    'Notion-Version': '2022-06-28'
+  };
+}
+
+// Définition des propriétés attendues : nom → type Notion
+const EXPECTED_PROPS = {
+  'Auteur':                'rich_text',
+  'Nationalité':           'rich_text',
+  'Éditeur':               'rich_text',
+  'Collection':            'rich_text',
+  'ISBN':                  'rich_text',
+  'Publication originale': 'rich_text',
+  'Date édition':          'rich_text',
+  'Date de lecture':       'rich_text',
+  'Commentaire':           'rich_text',
+  'Pages':                 'number',
+  'Thème':                 'select',
+  'Sous-thème':            'select',
+  'Statut':                'select',
+  'Priorité':              'select',
+  'Note':                  'select',
+  'État':                  'select',
+  'Collection (livre)':    'checkbox',
+};
+
+// Schéma Notion pour créer une propriété selon son type
+function propSchema(type) {
+  if (type === 'rich_text') return { rich_text: {} };
+  if (type === 'number')    return { number: { format: 'number' } };
+  if (type === 'select')    return { select: {} };
+  if (type === 'checkbox')  return { checkbox: {} };
+  return { rich_text: {} };
+}
+
+// Vérifie la base et crée les propriétés manquantes
+// Retourne { ok, created, conflicts, error }
+async function syncDatabaseProps(token, dbId) {
+  // 1. Lire la base
+  let dbRes;
+  try {
+    dbRes = await fetch(`https://api.notion.com/v1/databases/${dbId}`, {
+      headers: notionHeaders(token)
+    });
+  } catch(e) {
+    return { ok: false, error: 'Erreur réseau : ' + e.message };
+  }
+
+  if (dbRes.status === 404) return { ok: false, error: 'Base introuvable. Vérifie le Database ID et que l\'intégration est bien connectée à la base dans Notion.' };
+  if (dbRes.status === 401) return { ok: false, error: 'Token invalide ou intégration non autorisée.' };
+  if (!dbRes.ok) {
+    const err = await dbRes.json().catch(() => ({}));
+    return { ok: false, error: 'Erreur Notion ' + dbRes.status + ' : ' + (err.message || '') };
+  }
+
+  const db = await dbRes.json();
+  const existing = db.properties || {};
+
+  // 2. Identifier propriétés manquantes et conflits de type
+  const missing = [];
+  const conflicts = [];
+
+  for (const [name, expectedType] of Object.entries(EXPECTED_PROPS)) {
+    if (!existing[name]) {
+      missing.push(name);
+    } else if (existing[name].type !== expectedType) {
+      conflicts.push({ name, expected: expectedType, actual: existing[name].type });
+    }
+  }
+
+  // 3. Créer les propriétés manquantes
+  const created = [];
+  if (missing.length > 0) {
+    const newProps = {};
+    for (const name of missing) {
+      newProps[name] = propSchema(EXPECTED_PROPS[name]);
+    }
+    const patchRes = await fetch(`https://api.notion.com/v1/databases/${dbId}`, {
+      method: 'PATCH',
+      headers: notionHeaders(token),
+      body: JSON.stringify({ properties: newProps })
+    });
+    if (patchRes.ok) {
+      created.push(...missing);
+    } else {
+      const err = await patchRes.json().catch(() => ({}));
+      return { ok: false, error: 'Impossible de créer les propriétés manquantes : ' + (err.message || patchRes.status) };
+    }
+  }
+
+  return { ok: true, created, conflicts };
+}
+
+async function saveConfig() {
   const token = document.getElementById('cfg-token').value.trim();
-  const dbId  = document.getElementById('cfg-dbid').value.trim().replace(/[^a-f0-9]/gi,'');
-  if (!token.startsWith('secret_') || dbId.length !== 32) {
-    document.getElementById('config-status').textContent = 'Token ou Database ID invalide.';
+  let dbRaw   = document.getElementById('cfg-dbid').value.trim();
+  const statusEl = document.getElementById('config-status');
+
+  // Extraire l'ID depuis une URL Notion complète
+  const urlMatch = dbRaw.match(/notion\.so\/(?:[^/]+\/)?([a-f0-9]{32})/i);
+  if (urlMatch) dbRaw = urlMatch[1];
+  const dbId = dbRaw.replace(/[^a-f0-9]/gi, '');
+
+  if (!token.startsWith('ntn_') && !token.startsWith('secret_')) {
+    statusEl.textContent = '⚠️ Token invalide (doit commencer par ntn_ ou secret_).';
     return;
   }
+  if (dbId.length !== 32) {
+    statusEl.textContent = '⚠️ Database ID invalide (32 caractères attendus).';
+    return;
+  }
+
   localStorage.setItem('notion_token', token);
   localStorage.setItem('notion_dbid', dbId);
-  document.getElementById('config-status').textContent = '✓ Enregistré sur cet appareil.';
-  setTimeout(() => {
-    document.getElementById('config-panel').style.display = 'none';
-    document.getElementById('config-status').textContent = '';
-  }, 1500);
+  statusEl.textContent = '🔄 Vérification de la base Notion…';
+
+  const result = await syncDatabaseProps(token, dbId);
+
+  if (!result.ok) {
+    statusEl.textContent = '🔴 ' + result.error;
+    return;
+  }
+
+  let msg = '✅ Connexion Notion OK.';
+  if (result.created.length > 0) {
+    msg += ' Propriétés créées : ' + result.created.join(', ') + '.';
+  }
+  if (result.conflicts.length > 0) {
+    msg += ' ⚠️ Conflits (type différent, non modifié) : ' + result.conflicts.map(c => `${c.name} (attendu ${c.expected}, existant ${c.actual})`).join(', ') + '.';
+  }
+  if (result.created.length === 0 && result.conflicts.length === 0) {
+    msg += ' Toutes les propriétés sont à jour.';
+  }
+
+  statusEl.textContent = msg;
+  statusEl.style.whiteSpace = 'normal';
 }
 
 function toggleConfig() {
@@ -449,6 +584,7 @@ function toggleConfig() {
     const cfg = getConfig();
     document.getElementById('cfg-token').value = cfg.token;
     document.getElementById('cfg-dbid').value = cfg.dbId;
+    document.getElementById('config-status').textContent = '';
   }
 }
 
@@ -462,11 +598,25 @@ async function sendToNotion() {
 
   const get = id => document.getElementById(id)?.value?.trim() || '';
   const cb  = id => document.getElementById(id)?.checked || false;
-
   const notionStatus = document.getElementById('notion-status');
-  notionStatus.textContent = 'Envoi en cours…';
 
-  // Construction du payload Notion
+  notionStatus.textContent = '🔄 Vérification de la base…';
+
+  // Sync propriétés avant envoi
+  const sync = await syncDatabaseProps(cfg.token, cfg.dbId);
+  if (!sync.ok) {
+    notionStatus.textContent = '🔴 ' + sync.error;
+    return;
+  }
+
+  // Avertir si des propriétés ont été créées
+  let syncMsg = '';
+  if (sync.created.length > 0) syncMsg += ' Propriétés créées : ' + sync.created.join(', ') + '.';
+  if (sync.conflicts.length > 0) syncMsg += ' ⚠️ Conflits ignorés : ' + sync.conflicts.map(c => c.name).join(', ') + '.';
+
+  notionStatus.textContent = '🔄 Envoi en cours…';
+
+  // Construction du payload
   const props = {
     'Titre':                { title: [{ text: { content: get('f-titre') || '(sans titre)' } }] },
     'Auteur':               { rich_text: [{ text: { content: get('f-auteur') } }] },
@@ -477,54 +627,45 @@ async function sendToNotion() {
     'Publication originale':{ rich_text: [{ text: { content: get('f-datepub') } }] },
     'Date édition':         { rich_text: [{ text: { content: get('f-dateed') } }] },
     'Pages':                get('f-pages') ? { number: parseInt(get('f-pages')) || null } : undefined,
-    'Thème':                get('f-theme')    ? { select: { name: get('f-theme') } }    : undefined,
+    'Thème':                get('f-theme')     ? { select: { name: get('f-theme') } }     : undefined,
     'Sous-thème':           get('f-soustheme') ? { select: { name: get('f-soustheme') } } : undefined,
     'Statut':               { select: { name: get('f-statut') || 'À lire' } },
-    'Priorité':             get('f-priorite') ? { select: { name: get('f-priorite') } } : undefined,
+    'Priorité':             get('f-priorite')  ? { select: { name: get('f-priorite') } }  : undefined,
     'Date de lecture':      { rich_text: [{ text: { content: get('f-datelu') } }] },
-    'Note':                 get('f-note') ? { select: { name: get('f-note') } } : undefined,
-    'État':                 get('f-etat') ? { select: { name: get('f-etat') } } : undefined,
+    'Note':                 get('f-note')  ? { select: { name: get('f-note') } }  : undefined,
+    'État':                 get('f-etat')  ? { select: { name: get('f-etat') } }  : undefined,
     'Collection (livre)':   { checkbox: cb('f-collection') },
     'Commentaire':          { rich_text: [{ text: { content: get('f-comment') } }] },
   };
 
-  // Retirer les propriétés undefined
+  // Retirer les conflits (propriétés dont le type ne correspond pas)
+  for (const c of sync.conflicts) delete props[c.name];
+  // Retirer les undefined
   Object.keys(props).forEach(k => props[k] === undefined && delete props[k]);
 
-  const body = {
-    parent: { database_id: cfg.dbId },
-    properties: props,
-  };
+  const body = { parent: { database_id: cfg.dbId }, properties: props };
 
-  // Ajouter la couverture si disponible
-  const coverSrc = document.getElementById('cover-img').src;
-  if (coverSrc && document.getElementById('cover-img').style.display !== 'none') {
-    body.cover = { type: 'external', external: { url: coverSrc } };
+  // Couverture
+  const coverImg = document.getElementById('cover-img');
+  if (coverImg.src && coverImg.style.display !== 'none') {
+    body.cover = { type: 'external', external: { url: coverImg.src } };
   }
 
   try {
     const res = await fetch('https://api.notion.com/v1/pages', {
       method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + cfg.token,
-        'Content-Type': 'application/json',
-        'Notion-Version': '2022-06-28'
-      },
+      headers: notionHeaders(cfg.token),
       body: JSON.stringify(body)
     });
 
     if (res.ok) {
-      const data = await res.json();
-      notionStatus.textContent = '✅ Ajouté dans Notion !';
-      setTimeout(() => notionStatus.textContent = '', 3000);
+      notionStatus.textContent = '✅ Ajouté dans Notion !' + syncMsg;
+      notionStatus.style.whiteSpace = 'normal';
+      setTimeout(() => { notionStatus.textContent = ''; notionStatus.style.whiteSpace = ''; }, 5000);
     } else {
-      const err = await res.json();
-      // Si propriété inconnue, Notion retourne une erreur claire
-      if (err.code === 'validation_error' && err.message.includes('property')) {
-        notionStatus.textContent = '⚠️ Propriété manquante dans ta base Notion. Vérifie que toutes les colonnes existent.';
-      } else {
-        notionStatus.textContent = '🔴 Erreur Notion : ' + (err.message || res.status);
-      }
+      const err = await res.json().catch(() => ({}));
+      notionStatus.textContent = '🔴 Erreur Notion : ' + (err.message || res.status);
+      notionStatus.style.whiteSpace = 'normal';
     }
   } catch(e) {
     notionStatus.textContent = '🔴 Erreur réseau : ' + e.message;
