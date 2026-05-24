@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.16 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.17 — 24052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -90,6 +90,7 @@
       <div class="grid2">
         <div class="field full"><label>Titre</label><input type="text" id="f-titre"></div>
         <div class="field full"><label>Auteur(s)</label><input type="text" id="f-auteur"></div>
+        <div class="field"><label>Nationalité de l'auteur</label><input type="text" id="f-nationalite" placeholder="ex. Français, Allemand…"></div>
         <div class="field"><label>Éditeur</label><input type="text" id="f-editeur"></div>
         <div class="field"><label>Collection</label><input type="text" id="f-collection-ed"></div>
         <div class="field"><label>Publication originale</label><input type="text" id="f-datepub" placeholder="ex. 1739"></div>
@@ -183,37 +184,42 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.16</span>
+        <span style="font-weight:600;color:var(--text);">v0.17</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Champ nationalité auteur — thèmes et sous-thèmes revus et élargis — cases thème/sous-thème vides par défaut</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.17</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Suppression du scanner — saisie manuelle uniquement — ajout sélecteur de moteur (BnF par défaut, OpenLibrary, Google Books, Tous)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.16</span>
+        <span style="font-weight:600;color:var(--text);">v0.17</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : ouverture caméra iOS native uniquement, bandeau jaune pour copier ISBN, plus de tentative de décodage automatique</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.16</span>
+        <span style="font-weight:600;color:var(--text);">v0.17</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Abandon du scan temps réel (incompatible iOS 26 beta) — remplacement par photo + décodage, avec fallback vers la reconnaissance native iOS</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.16</span>
+        <span style="font-weight:600;color:var(--text);">v0.17</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Ajout zbar-wasm comme fallback quand BarcodeDetector absent (iOS < 17.4, Brave)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.16</span>
+        <span style="font-weight:600;color:var(--text);">v0.17</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Debug complet étape par étape : overlay ouvert en premier, message à chaque jalon (caméra, vidéo, BarcodeDetector, frames)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.16</span>
+        <span style="font-weight:600;color:var(--text);">v0.17</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner : readyState abaissé de 4 à 2 — corrige le blocage de la boucle d'analyse sur Brave iOS</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.16</span>
+        <span style="font-weight:600;color:var(--text);">v0.17</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : BarcodeDetector direct sur élément vidéo (sans canvas), debug visuel en temps réel, suppression des dépendances externes</div>
       </div>
@@ -268,23 +274,35 @@
 
 <script>
 const THEMES = {
-  "Philosophie": ["Esthétique","Éthique","Épistémologie","Métaphysique","Philosophie politique","Philosophie du langage","Logique","Philosophie des sciences","Histoire de la philosophie","Phénoménologie","Philosophie morale"],
-  "Littérature": ["Roman","Nouvelle","Poésie","Théâtre","Essai littéraire","Autobiographie","Correspondance"],
-  "Histoire": ["Histoire ancienne","Histoire médiévale","Histoire moderne","Histoire contemporaine","Histoire de France","Biographie","Mémoires"],
-  "Sciences sociales": ["Sociologie","Science politique","Économie","Anthropologie","Droit","Géographie"],
-  "Sciences": ["Mathématiques","Physique","Biologie","Informatique","Sciences cognitives"],
-  "Arts": ["Musique","Peinture","Architecture","Cinéma","Photographie"],
-  "Religion & Spiritualité": ["Christianisme","Islam","Bouddhisme","Philosophie orientale","Mystique"],
+  "Philosophie": ["Esthétique","Éthique","Épistémologie","Métaphysique","Philosophie politique","Philosophie du langage","Logique","Philosophie des sciences","Histoire de la philosophie","Phénoménologie","Philosophie morale","Philosophie orientale"],
+  "Littérature": ["Roman","Nouvelle","Poésie","Théâtre","Essai littéraire","Autobiographie","Correspondance","Conte","Aphorisme"],
+  "Histoire": ["Histoire ancienne","Histoire médiévale","Histoire moderne","Histoire contemporaine","Histoire de France","Biographie","Mémoires","Histoire des idées","Histoire de l'art"],
+  "Sciences humaines & sociales": ["Sociologie","Anthropologie","Linguistique","Sémiologie","Géographie humaine","Ethnologie"],
+  "Sciences & techniques": ["Mathématiques","Physique","Biologie","Informatique","Sciences cognitives","Médecine"],
+  "Arts": ["Musique","Peinture","Sculpture","Architecture","Cinéma","Photographie","Design"],
+  "Religion & spiritualité": ["Christianisme","Islam","Bouddhisme","Judaïsme","Mystique","Théologie","Mythologie"],
+  "Droit & politique": ["Droit constitutionnel","Droit international","Science politique","Géopolitique","Théorie politique"],
+  "Économie": ["Économie politique","Histoire économique","Économie comportementale","Finance"],
+  "Psychologie": ["Psychanalyse","Psychologie sociale","Psychologie cognitive","Neuropsychologie"],
   "Autre": ["—"]
 };
 
 function initThemes() {
-  document.getElementById('f-theme').innerHTML = Object.keys(THEMES).map(t=>`<option>${t}</option>`).join('');
-  updateSousTheme();
+  // Cases vides par défaut
+  document.getElementById('f-theme').innerHTML = '<option value="">— Thème —</option>' +
+    Object.keys(THEMES).map(t=>`<option value="${t}">${t}</option>`).join('');
+  document.getElementById('f-soustheme').innerHTML = '<option value="">— Sous-thème —</option>';
 }
+
 function updateSousTheme() {
   const t = document.getElementById('f-theme').value;
-  document.getElementById('f-soustheme').innerHTML = THEMES[t].map(s=>`<option>${s}</option>`).join('');
+  const sel = document.getElementById('f-soustheme');
+  if (!t) {
+    sel.innerHTML = '<option value="">— Sous-thème —</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">— Sous-thème —</option>' +
+    THEMES[t].map(s=>`<option value="${s}">${s}</option>`).join('');
 }
 function toggleLu() {
   const lu = document.getElementById('f-statut').value === 'Lu';
@@ -361,6 +379,7 @@ async function lookup() {
 function fillForm(b) {
   document.getElementById('f-titre').value=b.titre||'';
   document.getElementById('f-auteur').value=b.auteur||'';
+  document.getElementById('f-nationalite').value=b.nationalite||'';
   document.getElementById('f-editeur').value=b.editeur||'';
   document.getElementById('f-collection-ed').value=b.collection||'';
   document.getElementById('f-isbn').value=b.isbn||'';
@@ -381,6 +400,7 @@ function generate() {
   const L=[];
   const t=get('f-titre'); if(t) L.push(`📖 ${t}`);
   const a=get('f-auteur'); if(a) L.push(`Auteur : ${a}`);
+  const nat=get('f-nationalite'); if(nat) L.push(`Nationalité : ${nat}`);
   const e=get('f-editeur'); if(e) L.push(`Éditeur : ${e}`);
   const c=get('f-collection-ed'); if(c) L.push(`Collection : ${c}`);
   const dp=get('f-datepub'); if(dp) L.push(`Publication originale : ${dp}`);
