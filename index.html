@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.17 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.18 — 24052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -157,22 +157,40 @@
       </div>
     </div>
 
-    <button onclick="generate()" style="margin-bottom:1rem;">Générer le bloc Notion</button>
+    <button onclick="sendToNotion()" style="margin-bottom:1rem;">
+      Envoyer dans Notion
+    </button>
+    <p id="notion-status" class="status" style="text-align:center;"></p>
+  </div>
+</div>
 
-    <div id="output-section" style="display:none">
-      <div class="card">
-        <p class="section-title">À coller dans Notion</p>
-        <div class="result-box" id="result-text"></div>
-        <button class="secondary" onclick="copyResult()" id="copy-btn">Copier</button>
-      </div>
+<!-- Config Notion -->
+<div id="config-panel" style="display:none;max-width:600px;margin:0 auto 1rem;padding:0 1rem;">
+  <div class="card">
+    <p class="section-title">Configuration Notion</p>
+    <div class="field">
+      <label>Token d'intégration</label>
+      <input type="password" id="cfg-token" placeholder="secret_…" style="font-family:monospace;font-size:13px;">
     </div>
+    <div class="field">
+      <label>Database ID</label>
+      <input type="text" id="cfg-dbid" placeholder="32 caractères depuis l'URL Notion" style="font-family:monospace;font-size:13px;">
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+      Ces informations sont stockées uniquement sur cet appareil (localStorage). Elles ne sont jamais envoyées ailleurs qu'à l'API Notion.
+    </p>
+    <button onclick="saveConfig()">Enregistrer</button>
+    <p id="config-status" class="status" style="text-align:center;margin-top:6px;"></p>
   </div>
 </div>
 
 <!-- Devlog -->
-<div style="text-align:center;padding:1.5rem 0 2rem;">
+<div style="text-align:center;padding:1.5rem 0 2rem;display:flex;justify-content:center;gap:1.5rem;">
   <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;width:auto;height:auto;padding:4px 8px;text-decoration:underline;text-underline-offset:3px;">
     changelog
+  </button>
+  <button onclick="toggleConfig()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;width:auto;height:auto;padding:4px 8px;text-decoration:underline;text-underline-offset:3px;">
+    ⚙ configuration Notion
   </button>
 </div>
 
@@ -184,42 +202,47 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.17</span>
+        <span style="font-weight:600;color:var(--text);">v0.18</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Intégration API Notion — token et database ID stockés en localStorage — bouton "Envoyer dans Notion" — couverture envoyée automatiquement</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.18</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Champ nationalité auteur — thèmes et sous-thèmes revus et élargis — cases thème/sous-thème vides par défaut</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.17</span>
+        <span style="font-weight:600;color:var(--text);">v0.18</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Suppression du scanner — saisie manuelle uniquement — ajout sélecteur de moteur (BnF par défaut, OpenLibrary, Google Books, Tous)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.17</span>
+        <span style="font-weight:600;color:var(--text);">v0.18</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : ouverture caméra iOS native uniquement, bandeau jaune pour copier ISBN, plus de tentative de décodage automatique</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.17</span>
+        <span style="font-weight:600;color:var(--text);">v0.18</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Abandon du scan temps réel (incompatible iOS 26 beta) — remplacement par photo + décodage, avec fallback vers la reconnaissance native iOS</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.17</span>
+        <span style="font-weight:600;color:var(--text);">v0.18</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Ajout zbar-wasm comme fallback quand BarcodeDetector absent (iOS < 17.4, Brave)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.17</span>
+        <span style="font-weight:600;color:var(--text);">v0.18</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Debug complet étape par étape : overlay ouvert en premier, message à chaque jalon (caméra, vidéo, BarcodeDetector, frames)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.17</span>
+        <span style="font-weight:600;color:var(--text);">v0.18</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner : readyState abaissé de 4 à 2 — corrige le blocage de la boucle d'analyse sur Brave iOS</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.17</span>
+        <span style="font-weight:600;color:var(--text);">v0.18</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : BarcodeDetector direct sur élément vidéo (sans canvas), debug visuel en temps réel, suppression des dépendances externes</div>
       </div>
@@ -394,40 +417,118 @@ function fillForm(b) {
   document.getElementById('output-section').style.display='none';
 }
 
-function generate() {
-  const get=id=>document.getElementById(id)?.value?.trim()||'';
-  const cb=id=>document.getElementById(id)?.checked||false;
-  const L=[];
-  const t=get('f-titre'); if(t) L.push(`📖 ${t}`);
-  const a=get('f-auteur'); if(a) L.push(`Auteur : ${a}`);
-  const nat=get('f-nationalite'); if(nat) L.push(`Nationalité : ${nat}`);
-  const e=get('f-editeur'); if(e) L.push(`Éditeur : ${e}`);
-  const c=get('f-collection-ed'); if(c) L.push(`Collection : ${c}`);
-  const dp=get('f-datepub'); if(dp) L.push(`Publication originale : ${dp}`);
-  const de=get('f-dateed'); if(de) L.push(`Date édition : ${de}`);
-  const pg=get('f-pages'); if(pg) L.push(`Pages : ${pg}`);
-  const is=get('f-isbn'); if(is) L.push(`ISBN : ${is}`);
-  L.push('');
-  const th=get('f-theme'),so=get('f-soustheme');
-  if(th) L.push(`Thème : ${th}${so&&so!=='—'?' › '+so:''}`);
-  const st=get('f-statut'); if(st) L.push(`Statut : ${st}`);
-  const pr=get('f-priorite'); if(pr) L.push(`Priorité : ${pr}`);
-  const dl=get('f-datelu'); if(dl) L.push(`Lu en : ${dl}`);
-  const no=get('f-note'); if(no) L.push(`Note : ${no}`);
-  const et=get('f-etat'); if(et) L.push(`État : ${et}`);
-  if(cb('f-collection')) L.push(`⭐ Livre de collection`);
-  const co=get('f-comment'); if(co){L.push('');L.push(`Commentaire : ${co}`);}
-  document.getElementById('result-text').textContent=L.join('\n');
-  document.getElementById('output-section').style.display='block';
-  document.getElementById('output-section').scrollIntoView({behavior:'smooth',block:'nearest'});
+// ── CONFIG ─────────────────────────────────────────────
+function getConfig() {
+  return {
+    token: localStorage.getItem('notion_token') || '',
+    dbId:  localStorage.getItem('notion_dbid') || ''
+  };
 }
 
-function copyResult() {
-  navigator.clipboard.writeText(document.getElementById('result-text').textContent).then(()=>{
-    const btn=document.getElementById('copy-btn');
-    btn.textContent='✓ Copié !';
-    setTimeout(()=>btn.textContent='Copier',2000);
-  });
+function saveConfig() {
+  const token = document.getElementById('cfg-token').value.trim();
+  const dbId  = document.getElementById('cfg-dbid').value.trim().replace(/[^a-f0-9]/gi,'');
+  if (!token.startsWith('secret_') || dbId.length !== 32) {
+    document.getElementById('config-status').textContent = 'Token ou Database ID invalide.';
+    return;
+  }
+  localStorage.setItem('notion_token', token);
+  localStorage.setItem('notion_dbid', dbId);
+  document.getElementById('config-status').textContent = '✓ Enregistré sur cet appareil.';
+  setTimeout(() => {
+    document.getElementById('config-panel').style.display = 'none';
+    document.getElementById('config-status').textContent = '';
+  }, 1500);
+}
+
+function toggleConfig() {
+  const p = document.getElementById('config-panel');
+  const visible = p.style.display !== 'none';
+  p.style.display = visible ? 'none' : 'block';
+  if (!visible) {
+    const cfg = getConfig();
+    document.getElementById('cfg-token').value = cfg.token;
+    document.getElementById('cfg-dbid').value = cfg.dbId;
+  }
+}
+
+// ── ENVOI NOTION ───────────────────────────────────────
+async function sendToNotion() {
+  const cfg = getConfig();
+  if (!cfg.token || !cfg.dbId) {
+    document.getElementById('notion-status').textContent = '⚙ Configure d\'abord le token Notion (lien en bas de page).';
+    return;
+  }
+
+  const get = id => document.getElementById(id)?.value?.trim() || '';
+  const cb  = id => document.getElementById(id)?.checked || false;
+
+  const notionStatus = document.getElementById('notion-status');
+  notionStatus.textContent = 'Envoi en cours…';
+
+  // Construction du payload Notion
+  const props = {
+    'Titre':                { title: [{ text: { content: get('f-titre') || '(sans titre)' } }] },
+    'Auteur':               { rich_text: [{ text: { content: get('f-auteur') } }] },
+    'Nationalité':          { rich_text: [{ text: { content: get('f-nationalite') } }] },
+    'Éditeur':              { rich_text: [{ text: { content: get('f-editeur') } }] },
+    'Collection':           { rich_text: [{ text: { content: get('f-collection-ed') } }] },
+    'ISBN':                 { rich_text: [{ text: { content: get('f-isbn') } }] },
+    'Publication originale':{ rich_text: [{ text: { content: get('f-datepub') } }] },
+    'Date édition':         { rich_text: [{ text: { content: get('f-dateed') } }] },
+    'Pages':                get('f-pages') ? { number: parseInt(get('f-pages')) || null } : undefined,
+    'Thème':                get('f-theme')    ? { select: { name: get('f-theme') } }    : undefined,
+    'Sous-thème':           get('f-soustheme') ? { select: { name: get('f-soustheme') } } : undefined,
+    'Statut':               { select: { name: get('f-statut') || 'À lire' } },
+    'Priorité':             get('f-priorite') ? { select: { name: get('f-priorite') } } : undefined,
+    'Date de lecture':      { rich_text: [{ text: { content: get('f-datelu') } }] },
+    'Note':                 get('f-note') ? { select: { name: get('f-note') } } : undefined,
+    'État':                 get('f-etat') ? { select: { name: get('f-etat') } } : undefined,
+    'Collection (livre)':   { checkbox: cb('f-collection') },
+    'Commentaire':          { rich_text: [{ text: { content: get('f-comment') } }] },
+  };
+
+  // Retirer les propriétés undefined
+  Object.keys(props).forEach(k => props[k] === undefined && delete props[k]);
+
+  const body = {
+    parent: { database_id: cfg.dbId },
+    properties: props,
+  };
+
+  // Ajouter la couverture si disponible
+  const coverSrc = document.getElementById('cover-img').src;
+  if (coverSrc && document.getElementById('cover-img').style.display !== 'none') {
+    body.cover = { type: 'external', external: { url: coverSrc } };
+  }
+
+  try {
+    const res = await fetch('https://api.notion.com/v1/pages', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + cfg.token,
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      notionStatus.textContent = '✅ Ajouté dans Notion !';
+      setTimeout(() => notionStatus.textContent = '', 3000);
+    } else {
+      const err = await res.json();
+      // Si propriété inconnue, Notion retourne une erreur claire
+      if (err.code === 'validation_error' && err.message.includes('property')) {
+        notionStatus.textContent = '⚠️ Propriété manquante dans ta base Notion. Vérifie que toutes les colonnes existent.';
+      } else {
+        notionStatus.textContent = '🔴 Erreur Notion : ' + (err.message || res.status);
+      }
+    }
+  } catch(e) {
+    notionStatus.textContent = '🔴 Erreur réseau : ' + e.message;
+  }
 }
 
 function setStatus(msg) { document.getElementById('status').textContent=msg; }
