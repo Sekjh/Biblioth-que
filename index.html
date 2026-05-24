@@ -85,7 +85,7 @@
 <input type="file" id="file-input" accept="image/*" capture="environment">
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.8 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.9 — 24052026</span></h1>
 
   <div class="card">
     <button class="outline scan-btn" onclick="startScan()">
@@ -211,6 +211,11 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
     <div style="font-size:12px;line-height:1.7;">
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.9</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Ajout d'indicateurs de debug dans le scanner (méthode active, compteur de frames) pour diagnostiquer les échecs silencieux</div>
+      </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.8</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
@@ -339,12 +344,15 @@ async function startScan() {
       const bd = new BarcodeDetector({ formats:['ean_13','ean_8','code_128'] });
       const testC = document.createElement('canvas'); testC.width=2; testC.height=2;
       await bd.detect(testC); // lève une erreur si bloqué
+      msg.textContent = '🟢 BarcodeDetector actif';
       runRafScan(video, async (canvas) => {
         const r = await bd.detect(canvas);
         return r.length ? r[0].rawValue : null;
       });
       return;
-    } catch(e) {}
+    } catch(e) { msg.textContent = '🟡 BarcodeDetector bloqué, chargement ZXing…'; }
+  } else {
+    msg.textContent = '🟡 Chargement ZXing…';
   }
 
   // Méthode 2 : ZXing JS (fonctionne sans WASM, bon support WebKit)
@@ -359,6 +367,7 @@ async function startScan() {
       ]);
       zxingReader = new ZXing.MultiFormatReader();
       zxingReader.setHints(hints);
+      msg.textContent = '🟢 ZXing actif — approche le code-barres';
       runRafScan(video, (canvas) => {
         try {
           const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -370,34 +379,42 @@ async function startScan() {
         } catch(e) { return null; }
       });
       return;
-    } catch(e) {}
+    } catch(e) { msg.textContent = '🔴 Erreur ZXing : ' + e.message; }
+  } else {
+    msg.textContent = '🔴 ZXing non chargé';
   }
-
-  // Méthode 3 : photo unique
-  closeScanner();
-  setStatus('Scan temps réel non disponible. Utilise la saisie manuelle.');
 }
 
 function runRafScan(video, decodeFn) {
   const canvas = document.createElement('canvas');
   let lastCheck = 0;
+  let frameCount = 0;
+  const msg = document.getElementById('scanner-msg');
+  const baseMsg = msg.textContent;
 
   async function tick(ts) {
-    if (!stream) return; // scanner fermé
+    if (!stream) return;
     rafId = requestAnimationFrame(tick);
-    if (ts - lastCheck < 300) return; // ~3fps suffisent pour EAN
+    if (ts - lastCheck < 300) return;
     lastCheck = ts;
-    if (video.readyState < 2 || video.videoWidth === 0) return;
+    if (video.readyState < 2 || video.videoWidth === 0) {
+      msg.textContent = baseMsg + ' (attente vidéo…)';
+      return;
+    }
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(video, 0, 0);
+    frameCount++;
+    msg.textContent = baseMsg + ` (frame ${frameCount})`;
     try {
       const val = await decodeFn(canvas);
       if (val && /^\d{8,13}$/.test(val)) {
         closeScanner();
         document.getElementById('isbn-input').value = val;
         lookup();
+      } else if (val) {
+        msg.textContent = baseMsg + ` — lu: ${val} (format invalide)`;
       }
     } catch(e) {}
   }
