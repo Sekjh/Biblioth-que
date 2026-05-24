@@ -85,7 +85,7 @@
 <input type="file" id="file-input" accept="image/*" capture="environment">
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.9 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.10 — 24052026</span></h1>
 
   <div class="card">
     <button class="outline scan-btn" onclick="startScan()">
@@ -212,6 +212,11 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.10</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : BarcodeDetector direct sur élément vidéo (sans canvas), debug visuel en temps réel, suppression des dépendances externes</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.9</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Ajout d'indicateurs de debug dans le scanner (méthode active, compteur de frames) pour diagnostiquer les échecs silencieux</div>
@@ -290,22 +295,10 @@ function toggleLu() {
 // ── SCAN ──────────────────────────────────────────────
 let stream = null;
 let rafId = null;
-let zxingReader = null;
-
-function loadZXing() {
-  return new Promise((resolve) => {
-    if (window.ZXing) { resolve(true); return; }
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
-    s.onload = () => resolve(!!window.ZXing);
-    s.onerror = () => resolve(false);
-    document.head.appendChild(s);
-  });
-}
 
 async function startScan() {
   const msg = document.getElementById('scanner-msg');
-  msg.textContent = 'Chargement du décodeur…';
+  msg.textContent = '';
 
   // Ouvrir la caméra
   try {
@@ -313,111 +306,83 @@ async function startScan() {
       video: { facingMode: { ideal:'environment' }, width:{ ideal:1280 }, height:{ ideal:720 } }
     });
   } catch(e) {
-    msg.textContent = '';
     if (e.name === 'NotAllowedError') {
       setStatus('Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.');
     } else {
-      setStatus('Caméra inaccessible. Saisis l\'ISBN manuellement.');
+      setStatus('Caméra inaccessible : ' + e.message);
     }
     return;
   }
 
-  // Injecter la vidéo dans le viewport
+  // Injecter la vidéo
   const vp = document.getElementById('scanner-viewport');
   vp.innerHTML = '';
   const video = document.createElement('video');
-  video.autoplay = true; video.playsInline = true; video.muted = true;
-  video.setAttribute('playsinline','');
+  video.autoplay = true;
+  video.playsInline = true;
+  video.muted = true;
+  video.setAttribute('playsinline', '');
   video.style.cssText = 'width:100%;display:block;';
   vp.appendChild(video);
   video.srcObject = stream;
-
-  await new Promise(r => { video.onloadedmetadata = r; });
-  await video.play();
-
+  await video.play().catch(e => {});
   document.getElementById('scanner-overlay').classList.add('active');
-  msg.textContent = '';
 
-  // Méthode 1 : BarcodeDetector natif (si vraiment disponible)
-  if ('BarcodeDetector' in window) {
-    try {
-      const bd = new BarcodeDetector({ formats:['ean_13','ean_8','code_128'] });
-      const testC = document.createElement('canvas'); testC.width=2; testC.height=2;
-      await bd.detect(testC); // lève une erreur si bloqué
-      msg.textContent = '🟢 BarcodeDetector actif';
-      runRafScan(video, async (canvas) => {
-        const r = await bd.detect(canvas);
-        return r.length ? r[0].rawValue : null;
-      });
-      return;
-    } catch(e) { msg.textContent = '🟡 BarcodeDetector bloqué, chargement ZXing…'; }
-  } else {
-    msg.textContent = '🟡 Chargement ZXing…';
+  // Vérifier BarcodeDetector
+  if (!('BarcodeDetector' in window)) {
+    msg.textContent = '🔴 BarcodeDetector absent — saisie manuelle uniquement';
+    return;
   }
 
-  // Méthode 2 : ZXing JS (fonctionne sans WASM, bon support WebKit)
-  const loaded = await loadZXing();
-  if (loaded && window.ZXing) {
-    try {
-      const hints = new Map();
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-        ZXing.BarcodeFormat.EAN_13,
-        ZXing.BarcodeFormat.EAN_8,
-        ZXing.BarcodeFormat.CODE_128
-      ]);
-      zxingReader = new ZXing.MultiFormatReader();
-      zxingReader.setHints(hints);
-      msg.textContent = '🟢 ZXing actif — approche le code-barres';
-      runRafScan(video, (canvas) => {
-        try {
-          const ctx = canvas.getContext('2d', { willReadFrequently: true });
-          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const luminance = new ZXing.RGBLuminanceSource(imgData.data, canvas.width, canvas.height);
-          const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminance));
-          const result = zxingReader.decode(bmp);
-          return result ? result.getText() : null;
-        } catch(e) { return null; }
-      });
-      return;
-    } catch(e) { msg.textContent = '🔴 Erreur ZXing : ' + e.message; }
-  } else {
-    msg.textContent = '🔴 ZXing non chargé';
+  let bd;
+  try {
+    bd = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'upc_a', 'upc_e'] });
+  } catch(e) {
+    msg.textContent = '🔴 Erreur init : ' + e.message;
+    return;
   }
-}
 
-function runRafScan(video, decodeFn) {
-  const canvas = document.createElement('canvas');
-  let lastCheck = 0;
+  msg.textContent = '🟡 Analyse en cours…';
+
   let frameCount = 0;
-  const msg = document.getElementById('scanner-msg');
-  const baseMsg = msg.textContent;
+  let lastTs = 0;
 
   async function tick(ts) {
     if (!stream) return;
     rafId = requestAnimationFrame(tick);
-    if (ts - lastCheck < 300) return;
-    lastCheck = ts;
-    if (video.readyState < 2 || video.videoWidth === 0) {
-      msg.textContent = baseMsg + ' (attente vidéo…)';
+    if (ts - lastTs < 400) return;
+    lastTs = ts;
+
+    if (video.readyState < 4) {
+      msg.textContent = '🟡 Vidéo en attente (readyState=' + video.readyState + ')';
       return;
     }
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(video, 0, 0);
+
     frameCount++;
-    msg.textContent = baseMsg + ` (frame ${frameCount})`;
+    msg.textContent = '🟢 Frame ' + frameCount + ' analysée…';
+
     try {
-      const val = await decodeFn(canvas);
-      if (val && /^\d{8,13}$/.test(val)) {
-        closeScanner();
-        document.getElementById('isbn-input').value = val;
-        lookup();
-      } else if (val) {
-        msg.textContent = baseMsg + ` — lu: ${val} (format invalide)`;
+      const results = await bd.detect(video);
+      if (results.length > 0) {
+        const val = results[0].rawValue;
+        if (/^\d{8,13}$/.test(val)) {
+          msg.textContent = '✅ Lu : ' + val;
+          setTimeout(() => {
+            closeScanner();
+            document.getElementById('isbn-input').value = val;
+            lookup();
+          }, 300);
+        } else {
+          msg.textContent = '⚠️ Lu "' + val + '" — format non reconnu';
+        }
       }
-    } catch(e) {}
+    } catch(e) {
+      if (frameCount <= 2) {
+        msg.textContent = '🔴 Erreur détection : ' + e.message;
+      }
+    }
   }
+
   rafId = requestAnimationFrame(tick);
 }
 
@@ -425,9 +390,7 @@ function closeScanner() {
   document.getElementById('scanner-overlay').classList.remove('active');
   if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
   if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  zxingReader = null;
-  const vp = document.getElementById('scanner-viewport');
-  vp.innerHTML = '';
+  document.getElementById('scanner-viewport').innerHTML = '';
 }
 
 async function useCaptureInput() {
@@ -436,40 +399,13 @@ async function useCaptureInput() {
     const file = e.target.files[0];
     if (!file) return;
     setStatus('Analyse de l\'image…');
-    // Essai BarcodeDetector sur l'image
     if ('BarcodeDetector' in window) {
       try {
-        const bd = new BarcodeDetector({ formats:['ean_13','ean_8','code_128'] });
+        const bd = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128','upc_a','upc_e'] });
         const bmp = await createImageBitmap(file);
         const results = await bd.detect(bmp);
         if (results.length && /^\d{8,13}$/.test(results[0].rawValue)) {
           document.getElementById('isbn-input').value = results[0].rawValue;
-          lookup(); fi.value=''; return;
-        }
-      } catch(e) {}
-    }
-    // Essai ZXing sur l'image
-    const loaded = await loadZXing();
-    if (loaded && window.ZXing) {
-      try {
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        await new Promise(r => img.onload = r);
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width; canvas.height = img.height;
-        canvas.getContext('2d').drawImage(img, 0, 0);
-        URL.revokeObjectURL(img.src);
-        const hints = new Map();
-        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.CODE_128]);
-        const reader = new ZXing.MultiFormatReader();
-        reader.setHints(hints);
-        const ctx = canvas.getContext('2d');
-        const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
-        const lum = new ZXing.RGBLuminanceSource(imgData.data,canvas.width,canvas.height);
-        const bmp2 = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-        const result = reader.decode(bmp2);
-        if (result && /^\d{8,13}$/.test(result.getText())) {
-          document.getElementById('isbn-input').value = result.getText();
           lookup(); fi.value=''; return;
         }
       } catch(e) {}
