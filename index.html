@@ -83,7 +83,7 @@
 <input type="file" id="file-input" accept="image/*" capture="environment">
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.5 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.6 — 24052026</span></h1>
 
   <div class="card">
     <button class="outline scan-btn" onclick="startScan()">
@@ -210,6 +210,11 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.6</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Correction scanner Quagga2 : la caméra est désormais entièrement gérée par Quagga2 (plus de conflit de flux vidéo)</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.5</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Remplacement du scanner par Quagga2 en fallback — corrige l'échec de BarcodeDetector sur Brave iOS</div>
@@ -268,6 +273,7 @@ function toggleLu() {
 // ── SCAN ──────────────────────────────────────────────
 let stream = null;
 let scanLoop = null;
+let usingQuagga = false;
 
 function loadQuagga() {
   return new Promise((resolve) => {
@@ -283,50 +289,78 @@ function loadQuagga() {
 async function startScan() {
   const msg = document.getElementById('scanner-msg');
   msg.textContent = '';
+  usingQuagga = false;
 
-  // Demander accès caméra
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
-    });
-  } catch(e) {
-    if (e.name === 'NotAllowedError') {
-      setStatus('Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.');
-    } else {
-      useCaptureInput();
-    }
-    return;
-  }
-
-  const video = document.getElementById('scanner-video');
-  video.srcObject = stream;
-  await video.play();
-  document.getElementById('scanner-overlay').classList.add('active');
-
-  // Méthode 1 : BarcodeDetector natif — vérifie qu'il fonctionne vraiment
+  // Test BarcodeDetector : disponible ET fonctionnel ?
+  let nativeOk = false;
   if ('BarcodeDetector' in window) {
     try {
       const bd = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128'] });
-      const testCanvas = document.createElement('canvas');
-      testCanvas.width = 1; testCanvas.height = 1;
-      await bd.detect(testCanvas); // lève une exception si bloqué par Brave
-      runNativeScan(bd, video);
-      return;
-    } catch(e) {}
+      const c = document.createElement('canvas'); c.width=2; c.height=2;
+      await bd.detect(c);
+      nativeOk = true;
+    } catch(e) { nativeOk = false; }
   }
 
-  // Méthode 2 : Quagga2
-  msg.textContent = 'Chargement du décodeur…';
-  const loaded = await loadQuagga();
-  if (loaded && window.Quagga) {
-    msg.textContent = '';
-    runQuaggaScan();
+  if (nativeOk) {
+    // Méthode 1 : BarcodeDetector natif — on gère le flux soi-même
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal:'environment' }, width:{ ideal:1280 } }
+      });
+    } catch(e) {
+      setStatus(e.name==='NotAllowedError'
+        ? 'Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.'
+        : 'Caméra inaccessible. Saisis l\'ISBN manuellement.');
+      return;
+    }
+    const video = document.getElementById('scanner-video');
+    video.srcObject = stream;
+    await video.play();
+    document.getElementById('scanner-overlay').classList.add('active');
+    runNativeScan(new BarcodeDetector({ formats:['ean_13','ean_8','code_128'] }), video);
     return;
   }
 
-  // Méthode 3 : photo unique
-  closeScanner();
-  useCaptureInput();
+  // Méthode 2 : Quagga2 gère entièrement la caméra (ne pas ouvrir getUserMedia avant)
+  msg.textContent = 'Chargement du décodeur…';
+  const loaded = await loadQuagga();
+  if (!loaded || !window.Quagga) {
+    useCaptureInput(); return;
+  }
+  msg.textContent = '';
+  document.getElementById('scanner-overlay').classList.add('active');
+  usingQuagga = true;
+
+  Quagga.init({
+    inputStream: {
+      type: 'LiveStream',
+      target: document.getElementById('scanner-video'),
+      constraints: { facingMode: { ideal:'environment' } },
+      area: { top:'20%', right:'10%', bottom:'20%', left:'10%' }
+    },
+    decoder: { readers:['ean_reader','ean_8_reader','code_128_reader'] },
+    locate: true,
+    numOfWorkers: 0
+  }, (err) => {
+    if (err) {
+      document.getElementById('scanner-overlay').classList.remove('active');
+      usingQuagga = false;
+      // Quagga a aussi échoué → photo unique
+      useCaptureInput();
+      return;
+    }
+    Quagga.start();
+  });
+
+  Quagga.onDetected((result) => {
+    const code = result.codeResult.code;
+    if (/^\d{8,13}$/.test(code)) {
+      closeScanner();
+      document.getElementById('isbn-input').value = code;
+      lookup();
+    }
+  });
 }
 
 function runNativeScan(bd, video) {
@@ -351,50 +385,18 @@ function runNativeScan(bd, video) {
   }, 300);
 }
 
-function runQuaggaScan() {
-  Quagga.init({
-    inputStream: {
-      type: 'LiveStream',
-      target: document.getElementById('scanner-video'),
-      constraints: { facingMode: 'environment' }
-    },
-    decoder: { readers: ['ean_reader','ean_8_reader','code_128_reader'] },
-    locate: true
-  }, (err) => {
-    if (err) {
-      document.getElementById('scanner-msg').textContent = '';
-      closeScanner();
-      useCaptureInput();
-      return;
-    }
-    Quagga.start();
-  });
-
-  Quagga.onDetected((result) => {
-    const code = result.codeResult.code;
-    if (/^\d{8,13}$/.test(code)) {
-      Quagga.stop();
-      closeScanner();
-      document.getElementById('isbn-input').value = code;
-      lookup();
-    }
-  });
-}
-
 async function useCaptureInput() {
   const fi = document.getElementById('file-input');
   fi.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setStatus('Analyse de l\'image…');
-    // Essai Quagga sur l'image
     const loaded = await loadQuagga();
     if (loaded && window.Quagga) {
       const url = URL.createObjectURL(file);
       Quagga.decodeSingle({
-        src: url,
-        numOfWorkers: 0,
-        decoder: { readers: ['ean_reader','ean_8_reader','code_128_reader'] },
+        src: url, numOfWorkers: 0,
+        decoder: { readers:['ean_reader','ean_8_reader','code_128_reader'] },
         locate: true
       }, (result) => {
         URL.revokeObjectURL(url);
@@ -417,7 +419,7 @@ async function useCaptureInput() {
 function closeScanner() {
   document.getElementById('scanner-overlay').classList.remove('active');
   if (scanLoop) { clearInterval(scanLoop); scanLoop = null; }
-  try { if (window.Quagga) Quagga.stop(); } catch(e) {}
+  if (usingQuagga) { try { Quagga.stop(); } catch(e) {} usingQuagga = false; }
   if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
   const v = document.getElementById('scanner-video');
   v.srcObject = null;
