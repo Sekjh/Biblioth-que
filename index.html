@@ -85,7 +85,7 @@
 <input type="file" id="file-input" accept="image/*" capture="environment">
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.10 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.12 — 24052026</span></h1>
 
   <div class="card">
     <button class="outline scan-btn" onclick="startScan()">
@@ -212,7 +212,17 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.10</span>
+        <span style="font-weight:600;color:var(--text);">v0.12</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Debug complet étape par étape : overlay ouvert en premier, message à chaque jalon (caméra, vidéo, BarcodeDetector, frames)</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.12</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Scanner : readyState abaissé de 4 à 2 — corrige le blocage de la boucle d'analyse sur Brave iOS</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.12</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : BarcodeDetector direct sur élément vidéo (sans canvas), debug visuel en temps réel, suppression des dépendances externes</div>
       </div>
@@ -298,21 +308,21 @@ let rafId = null;
 
 async function startScan() {
   const msg = document.getElementById('scanner-msg');
-  msg.textContent = '';
+  // Ouvrir l'overlay immédiatement pour que msg soit visible
+  document.getElementById('scanner-overlay').classList.add('active');
+  msg.textContent = '1. Ouverture caméra…';
 
   // Ouvrir la caméra
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal:'environment' }, width:{ ideal:1280 }, height:{ ideal:720 } }
+      video: { facingMode: { ideal:'environment' } }
     });
   } catch(e) {
-    if (e.name === 'NotAllowedError') {
-      setStatus('Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.');
-    } else {
-      setStatus('Caméra inaccessible : ' + e.message);
-    }
+    msg.textContent = '🔴 Caméra : ' + e.name + ' — ' + e.message;
     return;
   }
+
+  msg.textContent = '2. Caméra OK, injection vidéo…';
 
   // Injecter la vidéo
   const vp = document.getElementById('scanner-viewport');
@@ -325,24 +335,30 @@ async function startScan() {
   video.style.cssText = 'width:100%;display:block;';
   vp.appendChild(video);
   video.srcObject = stream;
-  await video.play().catch(e => {});
-  document.getElementById('scanner-overlay').classList.add('active');
+
+  try {
+    await video.play();
+    msg.textContent = '3. Vidéo en lecture, readyState=' + video.readyState;
+  } catch(e) {
+    msg.textContent = '🔴 play() échoué : ' + e.message;
+    return;
+  }
 
   // Vérifier BarcodeDetector
   if (!('BarcodeDetector' in window)) {
-    msg.textContent = '🔴 BarcodeDetector absent — saisie manuelle uniquement';
+    msg.textContent = '🔴 BarcodeDetector absent';
     return;
   }
+  msg.textContent = '4. BarcodeDetector présent, init…';
 
   let bd;
   try {
     bd = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'upc_a', 'upc_e'] });
+    msg.textContent = '5. Init OK — approche le code-barres';
   } catch(e) {
-    msg.textContent = '🔴 Erreur init : ' + e.message;
+    msg.textContent = '🔴 Init BarcodeDetector : ' + e.message;
     return;
   }
-
-  msg.textContent = '🟡 Analyse en cours…';
 
   let frameCount = 0;
   let lastTs = 0;
@@ -353,13 +369,13 @@ async function startScan() {
     if (ts - lastTs < 400) return;
     lastTs = ts;
 
-    if (video.readyState < 4) {
-      msg.textContent = '🟡 Vidéo en attente (readyState=' + video.readyState + ')';
+    if (video.readyState < 2) {
+      msg.textContent = '🟡 Attente vidéo (readyState=' + video.readyState + ')';
       return;
     }
 
     frameCount++;
-    msg.textContent = '🟢 Frame ' + frameCount + ' analysée…';
+    msg.textContent = '🟢 Frame ' + frameCount + ' (readyState=' + video.readyState + ')';
 
     try {
       const results = await bd.detect(video);
