@@ -85,7 +85,7 @@
 <input type="file" id="file-input" accept="image/*" capture="environment">
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.7 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.8 — 24052026</span></h1>
 
   <div class="card">
     <button class="outline scan-btn" onclick="startScan()">
@@ -212,6 +212,11 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.8</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Remplacement de Quagga2 par ZXing JS + requestAnimationFrame — meilleur support WebKit/Brave iOS</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.7</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner : Quagga2 gère désormais son propre conteneur vidéo (div viewport) — corrige l'écran noir sur Brave iOS</div>
@@ -279,15 +284,15 @@ function toggleLu() {
 
 // ── SCAN ──────────────────────────────────────────────
 let stream = null;
-let scanLoop = null;
-let usingQuagga = false;
+let rafId = null;
+let zxingReader = null;
 
-function loadQuagga() {
+function loadZXing() {
   return new Promise((resolve) => {
-    if (window.Quagga) { resolve(true); return; }
+    if (window.ZXing) { resolve(true); return; }
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js';
-    s.onload = () => resolve(true);
+    s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+    s.onload = () => resolve(!!window.ZXing);
     s.onerror = () => resolve(false);
     document.head.appendChild(s);
   });
@@ -295,105 +300,117 @@ function loadQuagga() {
 
 async function startScan() {
   const msg = document.getElementById('scanner-msg');
-  msg.textContent = '';
-  usingQuagga = false;
+  msg.textContent = 'Chargement du décodeur…';
 
-  // Test BarcodeDetector : disponible ET fonctionnel ?
-  let nativeOk = false;
-  if ('BarcodeDetector' in window) {
-    try {
-      const bd = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128'] });
-      const c = document.createElement('canvas'); c.width=2; c.height=2;
-      await bd.detect(c);
-      nativeOk = true;
-    } catch(e) { nativeOk = false; }
-  }
-
-  if (nativeOk) {
-    // Méthode 1 : BarcodeDetector natif — on gère le flux soi-même
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal:'environment' }, width:{ ideal:1280 } }
-      });
-    } catch(e) {
-      setStatus(e.name==='NotAllowedError'
-        ? 'Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.'
-        : 'Caméra inaccessible. Saisis l\'ISBN manuellement.');
-      return;
+  // Ouvrir la caméra
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal:'environment' }, width:{ ideal:1280 }, height:{ ideal:720 } }
+    });
+  } catch(e) {
+    msg.textContent = '';
+    if (e.name === 'NotAllowedError') {
+      setStatus('Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.');
+    } else {
+      setStatus('Caméra inaccessible. Saisis l\'ISBN manuellement.');
     }
-    const vp = document.getElementById('scanner-viewport');
-    const video = document.createElement('video');
-    video.autoplay = true; video.playsInline = true; video.muted = true;
-    video.style.width = '100%';
-    vp.innerHTML = '';
-    vp.appendChild(video);
-    video.srcObject = stream;
-    await video.play();
-    document.getElementById('scanner-overlay').classList.add('active');
-    runNativeScan(new BarcodeDetector({ formats:['ean_13','ean_8','code_128'] }), video);
     return;
   }
 
-  // Méthode 2 : Quagga2 gère entièrement la caméra (ne pas ouvrir getUserMedia avant)
-  msg.textContent = 'Chargement du décodeur…';
-  const loaded = await loadQuagga();
-  if (!loaded || !window.Quagga) {
-    useCaptureInput(); return;
-  }
-  msg.textContent = '';
+  // Injecter la vidéo dans le viewport
+  const vp = document.getElementById('scanner-viewport');
+  vp.innerHTML = '';
+  const video = document.createElement('video');
+  video.autoplay = true; video.playsInline = true; video.muted = true;
+  video.setAttribute('playsinline','');
+  video.style.cssText = 'width:100%;display:block;';
+  vp.appendChild(video);
+  video.srcObject = stream;
+
+  await new Promise(r => { video.onloadedmetadata = r; });
+  await video.play();
+
   document.getElementById('scanner-overlay').classList.add('active');
-  usingQuagga = true;
+  msg.textContent = '';
 
-  Quagga.init({
-    inputStream: {
-      type: 'LiveStream',
-      target: document.getElementById('scanner-viewport'),
-      constraints: { facingMode: { ideal:'environment' } },
-      area: { top:'20%', right:'10%', bottom:'20%', left:'10%' }
-    },
-    decoder: { readers:['ean_reader','ean_8_reader','code_128_reader'] },
-    locate: true,
-    numOfWorkers: 0
-  }, (err) => {
-    if (err) {
-      document.getElementById('scanner-overlay').classList.remove('active');
-      usingQuagga = false;
-      useCaptureInput();
+  // Méthode 1 : BarcodeDetector natif (si vraiment disponible)
+  if ('BarcodeDetector' in window) {
+    try {
+      const bd = new BarcodeDetector({ formats:['ean_13','ean_8','code_128'] });
+      const testC = document.createElement('canvas'); testC.width=2; testC.height=2;
+      await bd.detect(testC); // lève une erreur si bloqué
+      runRafScan(video, async (canvas) => {
+        const r = await bd.detect(canvas);
+        return r.length ? r[0].rawValue : null;
+      });
       return;
-    }
-    Quagga.start();
-  });
+    } catch(e) {}
+  }
 
-  Quagga.onDetected((result) => {
-    const code = result.codeResult.code;
-    if (/^\d{8,13}$/.test(code)) {
-      closeScanner();
-      document.getElementById('isbn-input').value = code;
-      lookup();
-    }
-  });
+  // Méthode 2 : ZXing JS (fonctionne sans WASM, bon support WebKit)
+  const loaded = await loadZXing();
+  if (loaded && window.ZXing) {
+    try {
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.CODE_128
+      ]);
+      zxingReader = new ZXing.MultiFormatReader();
+      zxingReader.setHints(hints);
+      runRafScan(video, (canvas) => {
+        try {
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const luminance = new ZXing.RGBLuminanceSource(imgData.data, canvas.width, canvas.height);
+          const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminance));
+          const result = zxingReader.decode(bmp);
+          return result ? result.getText() : null;
+        } catch(e) { return null; }
+      });
+      return;
+    } catch(e) {}
+  }
+
+  // Méthode 3 : photo unique
+  closeScanner();
+  setStatus('Scan temps réel non disponible. Utilise la saisie manuelle.');
 }
 
-function runNativeScan(bd, video) {
+function runRafScan(video, decodeFn) {
   const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  scanLoop = setInterval(async () => {
-    if (video.readyState < 2) return;
+  let lastCheck = 0;
+
+  async function tick(ts) {
+    if (!stream) return; // scanner fermé
+    rafId = requestAnimationFrame(tick);
+    if (ts - lastCheck < 300) return; // ~3fps suffisent pour EAN
+    lastCheck = ts;
+    if (video.readyState < 2 || video.videoWidth === 0) return;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(video, 0, 0);
     try {
-      const results = await bd.detect(canvas);
-      for (const r of results) {
-        if (/^\d{8,13}$/.test(r.rawValue)) {
-          closeScanner();
-          document.getElementById('isbn-input').value = r.rawValue;
-          lookup();
-          return;
-        }
+      const val = await decodeFn(canvas);
+      if (val && /^\d{8,13}$/.test(val)) {
+        closeScanner();
+        document.getElementById('isbn-input').value = val;
+        lookup();
       }
     } catch(e) {}
-  }, 300);
+  }
+  rafId = requestAnimationFrame(tick);
+}
+
+function closeScanner() {
+  document.getElementById('scanner-overlay').classList.remove('active');
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  zxingReader = null;
+  const vp = document.getElementById('scanner-viewport');
+  vp.innerHTML = '';
 }
 
 async function useCaptureInput() {
@@ -402,40 +419,48 @@ async function useCaptureInput() {
     const file = e.target.files[0];
     if (!file) return;
     setStatus('Analyse de l\'image…');
-    const loaded = await loadQuagga();
-    if (loaded && window.Quagga) {
-      const url = URL.createObjectURL(file);
-      Quagga.decodeSingle({
-        src: url, numOfWorkers: 0,
-        decoder: { readers:['ean_reader','ean_8_reader','code_128_reader'] },
-        locate: true
-      }, (result) => {
-        URL.revokeObjectURL(url);
-        if (result?.codeResult?.code && /^\d{8,13}$/.test(result.codeResult.code)) {
-          document.getElementById('isbn-input').value = result.codeResult.code;
-          lookup();
-        } else {
-          setStatus('Code-barres non détecté. Saisis l\'ISBN manuellement.');
+    // Essai BarcodeDetector sur l'image
+    if ('BarcodeDetector' in window) {
+      try {
+        const bd = new BarcodeDetector({ formats:['ean_13','ean_8','code_128'] });
+        const bmp = await createImageBitmap(file);
+        const results = await bd.detect(bmp);
+        if (results.length && /^\d{8,13}$/.test(results[0].rawValue)) {
+          document.getElementById('isbn-input').value = results[0].rawValue;
+          lookup(); fi.value=''; return;
         }
-        fi.value = '';
-      });
-      return;
+      } catch(e) {}
     }
-    setStatus('Scanner non supporté. Saisis l\'ISBN manuellement.');
+    // Essai ZXing sur l'image
+    const loaded = await loadZXing();
+    if (loaded && window.ZXing) {
+      try {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        await new Promise(r => img.onload = r);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width; canvas.height = img.height;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        URL.revokeObjectURL(img.src);
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.CODE_128]);
+        const reader = new ZXing.MultiFormatReader();
+        reader.setHints(hints);
+        const ctx = canvas.getContext('2d');
+        const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+        const lum = new ZXing.RGBLuminanceSource(imgData.data,canvas.width,canvas.height);
+        const bmp2 = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
+        const result = reader.decode(bmp2);
+        if (result && /^\d{8,13}$/.test(result.getText())) {
+          document.getElementById('isbn-input').value = result.getText();
+          lookup(); fi.value=''; return;
+        }
+      } catch(e) {}
+    }
+    setStatus('Code-barres non détecté. Saisis l\'ISBN manuellement.');
     fi.value = '';
   };
   fi.click();
-}
-
-function closeScanner() {
-  document.getElementById('scanner-overlay').classList.remove('active');
-  if (scanLoop) { clearInterval(scanLoop); scanLoop = null; }
-  if (usingQuagga) { try { Quagga.stop(); } catch(e) {} usingQuagga = false; }
-  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  // Vider le viewport
-  const vp = document.getElementById('scanner-viewport');
-  const vid = vp.querySelector('video');
-  if (vid) { vid.srcObject = null; }
 }
 
 // ── LOOKUP ─────────────────────────────────────────────
