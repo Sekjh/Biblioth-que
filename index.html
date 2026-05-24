@@ -46,59 +46,29 @@
   #form-section { display: none; }
   .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
-  /* Scanner overlay */
-  #scanner-overlay {
-    display: none; position: fixed; inset: 0;
-    background: #000; z-index: 1000;
-    flex-direction: column; align-items: center; justify-content: center;
-  }
-  #scanner-overlay.active { display: flex; }
-  #scanner-viewport { width: 100%; max-width: 480px; position: relative; }
-  #scanner-viewport video { width: 100%; display: block; }
-  #scanner-viewport canvas { display: none; }
-  #scanner-frame {
-    position: absolute; width: 250px; height: 90px;
-    border: 2px solid rgba(255,255,255,0.9); border-radius: 8px;
-    box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
-  }
-  #scanner-close {
-    position: absolute; top: 1.5rem; right: 1.5rem;
-    background: rgba(255,255,255,0.15); border: none; color: #fff;
-    border-radius: 50%; width: 40px; height: 40px; font-size: 20px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-  }
-  #scanner-hint { color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 2.5rem; text-align: center; padding: 0 2rem; }
-  #scanner-msg { color: #fff; font-size: 13px; margin-top: 0.75rem; min-height: 18px; }
-  #file-input { display: none; }
 </style>
 </head>
 <body>
 
-<div id="scanner-overlay">
-  <button id="scanner-close" onclick="closeScanner()" aria-label="Fermer">✕</button>
-  <div id="scanner-viewport"></div>
-  <div id="scanner-frame"></div>
-  <p id="scanner-hint">Centre le code-barres dans le cadre</p>
-  <p id="scanner-msg"></p>
-</div>
-
-<input type="file" id="file-input" accept="image/*" capture="environment">
-
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.15 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.16 — 24052026</span></h1>
 
   <div class="card">
-    <button class="outline scan-btn" onclick="startScan()">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-      Ouvrir la caméra
-    </button>
-    <p style="font-size:11px;color:var(--muted);margin-bottom:0.75rem;line-height:1.5;">Pointe vers le code-barres → un bandeau jaune apparaît → tape dessus pour copier l'ISBN → colle-le dans le champ ci-dessous</p>
+    <div class="field" style="margin-bottom:10px;">
+      <label>Moteur de recherche</label>
+      <select id="search-engine">
+        <option value="bnf">BnF — Bibliothèque nationale de France (recommandé)</option>
+        <option value="openlibrary">OpenLibrary</option>
+        <option value="google">Google Books</option>
+        <option value="all">Tous (BnF → OpenLibrary → Google Books)</option>
+      </select>
+    </div>
     <div class="input-row">
-      <input type="text" id="isbn-input" placeholder="ou saisir l'ISBN manuellement…"
+      <input type="text" id="isbn-input" placeholder="Saisir l'ISBN…"
         inputmode="numeric"
         oninput="this.value=this.value.replace(/[^0-9Xx-]/g,'')"
         onkeydown="if(event.key==='Enter')lookup()">
-      <button onclick="lookup()">OK</button>
+      <button onclick="lookup()">Rechercher</button>
     </div>
     <p id="status" class="status"></p>
   </div>
@@ -213,32 +183,37 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.15</span>
+        <span style="font-weight:600;color:var(--text);">v0.16</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Suppression du scanner — saisie manuelle uniquement — ajout sélecteur de moteur (BnF par défaut, OpenLibrary, Google Books, Tous)</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.16</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : ouverture caméra iOS native uniquement, bandeau jaune pour copier ISBN, plus de tentative de décodage automatique</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.15</span>
+        <span style="font-weight:600;color:var(--text);">v0.16</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Abandon du scan temps réel (incompatible iOS 26 beta) — remplacement par photo + décodage, avec fallback vers la reconnaissance native iOS</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.15</span>
+        <span style="font-weight:600;color:var(--text);">v0.16</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Ajout zbar-wasm comme fallback quand BarcodeDetector absent (iOS < 17.4, Brave)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.15</span>
+        <span style="font-weight:600;color:var(--text);">v0.16</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Debug complet étape par étape : overlay ouvert en premier, message à chaque jalon (caméra, vidéo, BarcodeDetector, frames)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.15</span>
+        <span style="font-weight:600;color:var(--text);">v0.16</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner : readyState abaissé de 4 à 2 — corrige le blocage de la boucle d'analyse sur Brave iOS</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.15</span>
+        <span style="font-weight:600;color:var(--text);">v0.16</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : BarcodeDetector direct sur élément vidéo (sans canvas), debug visuel en temps réel, suppression des dépendances externes</div>
       </div>
@@ -318,66 +293,66 @@ function toggleLu() {
   document.getElementById('priorite-block').classList.toggle('hidden', lu);
 }
 
-// ── SCAN ──────────────────────────────────────────────
-let stream = null;
-let rafId = null;
-let zbarModule = null;
-
-async function startScan() {
-  const fi = document.getElementById('file-input');
-  fi.onchange = () => { fi.value = ''; };
-  fi.click();
-}
-
-function closeScanner() {
-  document.getElementById('scanner-overlay').classList.remove('active');
-  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  document.getElementById('scanner-viewport').innerHTML = '';
-}
-
 // ── LOOKUP ─────────────────────────────────────────────
+async function fetchBnF(raw, b) {
+  const xml = await fetch(`https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn+adj+"${raw}"&recordSchema=unimarcxchange&maximumRecords=1`).then(r=>r.text());
+  const doc = new DOMParser().parseFromString(xml,'text/xml');
+  const rec = doc.querySelector('record');
+  if (!rec) return;
+  const gf = (tag,sub) => { const el=rec.querySelector(`datafield[tag="${tag}"] subfield[code="${sub}"]`); return el?el.textContent.trim():''; };
+  const gfa = (tag,sub) => Array.from(rec.querySelectorAll(`datafield[tag="${tag}"] subfield[code="${sub}"]`)).map(e=>e.textContent.trim());
+  b.titre = gf('200','a'); const esub=gf('200','e'); if(esub&&b.titre) b.titre+=' — '+esub;
+  const na=gfa('700','a'),nb=gfa('700','b'); b.auteur=na.map((a,i)=>nb[i]?nb[i]+' '+a:a).join(', ');
+  if(!b.auteur){const na2=gfa('701','a'),nb2=gfa('701','b');b.auteur=na2.map((a,i)=>nb2[i]?nb2[i]+' '+a:a).join(', ');}
+  b.editeur=gf('210','c')||gf('214','c'); b.dateed=gf('210','d')||gf('214','d');
+  b.collection=gf('225','a'); b.pages=gf('215','a');
+  if(b.titre) b.source='BnF';
+}
+
+async function fetchOpenLibrary(raw, b) {
+  const d=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${raw}&format=json&jscmd=details`).then(r=>r.json());
+  const entry=d[`ISBN:${raw}`];
+  if(!entry) return;
+  const det=entry.details;
+  b.titre=det.title||''; b.auteur=det.authors?.map(a=>a.name).join(', ')||'';
+  b.editeur=det.publishers?.[0]||''; b.dateed=det.publish_date||''; b.pages=det.number_of_pages||'';
+  if(entry.thumbnail_url) b.couverture=entry.thumbnail_url.replace('-S.','-M.');
+  if(b.titre) b.source='OpenLibrary';
+}
+
+async function fetchGoogle(raw, b) {
+  const g=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${raw}`).then(r=>r.json());
+  if(!g.items?.length) return;
+  const v=g.items[0].volumeInfo;
+  b.titre=v.title||''; b.auteur=v.authors?.join(', ')||''; b.editeur=v.publisher||'';
+  b.dateed=v.publishedDate||''; b.pages=v.pageCount||'';
+  if(v.imageLinks?.thumbnail) b.couverture=v.imageLinks.thumbnail.replace('http:','https:');
+  if(b.titre) b.source='Google Books';
+}
+
 async function lookup() {
   const raw = document.getElementById('isbn-input').value.trim().replace(/[-\s]/g,'');
   if (!raw) return;
   setStatus('Recherche en cours…');
   document.getElementById('form-section').style.display = 'none';
 
+  const engine = document.getElementById('search-engine').value;
   let b = { isbn:raw, titre:'', auteur:'', editeur:'', collection:'', dateed:'', pages:'', couverture:'', source:'' };
 
-  // BnF
   try {
-    const xml = await fetch(`https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn+adj+"${raw}"&recordSchema=unimarcxchange&maximumRecords=1`).then(r=>r.text());
-    const doc = new DOMParser().parseFromString(xml,'text/xml');
-    const rec = doc.querySelector('record');
-    if (rec) {
-      const gf = (tag,sub) => { const el=rec.querySelector(`datafield[tag="${tag}"] subfield[code="${sub}"]`); return el?el.textContent.trim():''; };
-      const gfa = (tag,sub) => Array.from(rec.querySelectorAll(`datafield[tag="${tag}"] subfield[code="${sub}"]`)).map(e=>e.textContent.trim());
-      b.titre = gf('200','a'); const esub=gf('200','e'); if(esub&&b.titre) b.titre+=' — '+esub;
-      const na=gfa('700','a'),nb=gfa('700','b'); b.auteur=na.map((a,i)=>nb[i]?nb[i]+' '+a:a).join(', ');
-      if(!b.auteur){const na2=gfa('701','a'),nb2=gfa('701','b');b.auteur=na2.map((a,i)=>nb2[i]?nb2[i]+' '+a:a).join(', ');}
-      b.editeur=gf('210','c')||gf('214','c'); b.dateed=gf('210','d')||gf('214','d');
-      b.collection=gf('225','a'); b.pages=gf('215','a');
-      if(b.titre) b.source='BnF';
+    if (engine === 'bnf') {
+      await fetchBnF(raw, b);
+    } else if (engine === 'openlibrary') {
+      await fetchOpenLibrary(raw, b);
+    } else if (engine === 'google') {
+      await fetchGoogle(raw, b);
+    } else {
+      // all : BnF → OpenLibrary → Google Books
+      await fetchBnF(raw, b);
+      if (!b.titre) await fetchOpenLibrary(raw, b);
+      if (!b.titre) await fetchGoogle(raw, b);
     }
-  } catch(e){}
-
-  // OpenLibrary
-  if(!b.titre) {
-    try {
-      const d=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${raw}&format=json&jscmd=details`).then(r=>r.json());
-      const entry=d[`ISBN:${raw}`];
-      if(entry){ const det=entry.details; b.titre=det.title||''; b.auteur=det.authors?.map(a=>a.name).join(', ')||''; b.editeur=det.publishers?.[0]||''; b.dateed=det.publish_date||''; b.pages=det.number_of_pages||''; if(entry.thumbnail_url) b.couverture=entry.thumbnail_url.replace('-S.','-M.'); if(b.titre) b.source='OpenLibrary'; }
-    } catch(e){}
-  }
-
-  // Google Books
-  if(!b.titre) {
-    try {
-      const g=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${raw}`).then(r=>r.json());
-      if(g.items?.length){ const v=g.items[0].volumeInfo; b.titre=v.title||''; b.auteur=v.authors?.join(', ')||''; b.editeur=v.publisher||''; b.dateed=v.publishedDate||''; b.pages=v.pageCount||''; if(v.imageLinks?.thumbnail) b.couverture=v.imageLinks.thumbnail.replace('http:','https:'); if(b.titre) b.source='Google Books'; }
-    } catch(e){}
-  }
+  } catch(e) {}
 
   setStatus(b.titre ? '' : 'ISBN introuvable — remplis manuellement.');
   fillForm(b);
