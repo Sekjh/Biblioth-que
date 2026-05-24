@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.22 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.23 — 24052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -205,115 +205,46 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
     <div style="font-size:12px;line-height:1.7;">
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Correction : propriété titre mappée sur "Nom" (nom par défaut Notion FR) au lieu de "Titre"</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Proxy Cloudflare Worker configurable — toutes les requêtes Notion routées via le proxy pour éviter les erreurs CORS</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Sync automatique des propriétés Notion — création des champs manquants, détection des conflits de type, messages lisibles à chaque étape</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Configuration : accepte l'URL Notion complète pour le Database ID (extraction automatique)</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Intégration API Notion — token et database ID stockés en localStorage — bouton "Envoyer dans Notion" — couverture envoyée automatiquement</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Champ nationalité auteur — thèmes et sous-thèmes revus et élargis — cases thème/sous-thème vides par défaut</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Suppression du scanner — saisie manuelle uniquement — ajout sélecteur de moteur (BnF par défaut, OpenLibrary, Google Books, Tous)</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : ouverture caméra iOS native uniquement, bandeau jaune pour copier ISBN, plus de tentative de décodage automatique</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Abandon du scan temps réel (incompatible iOS 26 beta) — remplacement par photo + décodage, avec fallback vers la reconnaissance native iOS</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Ajout zbar-wasm comme fallback quand BarcodeDetector absent (iOS < 17.4, Brave)</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Debug complet étape par étape : overlay ouvert en premier, message à chaque jalon (caméra, vidéo, BarcodeDetector, frames)</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Scanner : readyState abaissé de 4 à 2 — corrige le blocage de la boucle d'analyse sur Brave iOS</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.22</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : BarcodeDetector direct sur élément vidéo (sans canvas), debug visuel en temps réel, suppression des dépendances externes</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.9</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Ajout d'indicateurs de debug dans le scanner (méthode active, compteur de frames) pour diagnostiquer les échecs silencieux</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.8</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Remplacement de Quagga2 par ZXing JS + requestAnimationFrame — meilleur support WebKit/Brave iOS</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.7</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Scanner : Quagga2 gère désormais son propre conteneur vidéo (div viewport) — corrige l'écran noir sur Brave iOS</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.6</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Correction scanner Quagga2 : la caméra est désormais entièrement gérée par Quagga2 (plus de conflit de flux vidéo)</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.5</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Remplacement du scanner par Quagga2 en fallback — corrige l'échec de BarcodeDetector sur Brave iOS</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.4</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Ajout du scanner caméra (BarcodeDetector natif + fallback photo) — numéro de version affiché dans l'interface</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.3</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">BnF (catalogue national français) ajouté comme source principale — corrige l'échec sur les éditions françaises récentes</div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.2</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Export en fichier HTML autonome — sources OpenLibrary + Google Books, saisie manuelle complète, génération du bloc Notion</div>
-      </div>
       <div style="padding:0.75rem 1rem;">
-        <span style="font-weight:600;color:var(--text);">v0.1</span>
+        <span style="font-weight:600;color:var(--text);">v0.23</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:3px;">Prototype initial — lookup ISBN, formulaire (thème/sous-thème, statut, note, état, collection), bloc Notion copiable</div>
+        <div style="color:var(--muted);margin-top:6px;line-height:1.8;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:4px;">Lookup ISBN</div>
+          <div>• Saisie manuelle de l'ISBN (13 ou 10 chiffres)</div>
+          <div>• Moteur préférentiel configurable : BnF (défaut), OpenLibrary, Google Books</div>
+          <div>• Fallback automatique sur les autres sources si le moteur préféré ne trouve rien</div>
+          <div>• BnF via API SRU UNIMARC — meilleure couverture livres français récents</div>
+          <div>• Affichage de la couverture et de la source utilisée</div>
+
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:4px;">Formulaire</div>
+          <div>• Données bibliographiques : titre, auteur(s), nationalité, éditeur, collection, ISBN, date de publication originale, date de l'édition, nombre de pages</div>
+          <div>• Classification : thème (11 catégories) et sous-thème (listes contextuelles), vides par défaut</div>
+          <div>• Suivi de lecture : statut (À lire / En cours / Lu), priorité, date de lecture, note ★</div>
+          <div>• État physique : état du livre, livre de collection (checkbox), commentaire libre</div>
+          <div>• Tous les champs modifiables manuellement après lookup</div>
+
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:4px;">Intégration Notion</div>
+          <div>• Envoi direct via API Notion — crée une page dans la base configurée</div>
+          <div>• Proxy Cloudflare Worker pour contourner les restrictions CORS</div>
+          <div>• Token, Database ID et URL proxy stockés en localStorage (jamais dans le code)</div>
+          <div>• Sync automatique des propriétés : création des champs manquants, détection des conflits de type</div>
+          <div>• Contrôle doublon sur ISBN avant envoi — demande confirmation si le livre existe déjà</div>
+          <div>• Couverture envoyée comme image de couverture de la page Notion</div>
+          <div>• Propriété titre mappée sur "Nom" (nom par défaut Notion FR)</div>
+
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:4px;">Interface</div>
+          <div>• Mode clair / sombre automatique (selon préférences système)</div>
+          <div>• Panneau de configuration Notion accessible via lien discret en bas de page</div>
+          <div>• Changelog (ce panneau)</div>
+          <div>• Fichier HTML autonome, zéro dépendance externe, déployé sur GitHub Pages</div>
+
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:4px;">Scanner ISBN (en attente)</div>
+          <div>• Scan caméra suspendu — BarcodeDetector non disponible sur iOS 26 beta et Brave iOS</div>
+          <div>• Sera réactivé dès stabilisation de l'API sur iOS</div>
+        </div>
+      </div>
+    </div>
+        <div style="color:var(--muted);margin-top:3px;">BnF (catalogue national français) ajouté comme source principale — corrige l'échec sur les éditions françaises récentes</div>
       </div>
     </div>
   </div>
@@ -404,23 +335,51 @@ async function lookup() {
   const engine = document.getElementById('search-engine').value;
   let b = { isbn:raw, titre:'', auteur:'', editeur:'', collection:'', dateed:'', pages:'', couverture:'', source:'' };
 
+  // Ordre de priorité selon le moteur choisi
+  const order = {
+    bnf:         [fetchBnF, fetchOpenLibrary, fetchGoogle],
+    openlibrary: [fetchOpenLibrary, fetchBnF, fetchGoogle],
+    google:      [fetchGoogle, fetchBnF, fetchOpenLibrary],
+    all:         [fetchBnF, fetchOpenLibrary, fetchGoogle],
+  };
+  const fetchers = order[engine] || order.all;
+
   try {
-    if (engine === 'bnf') {
-      await fetchBnF(raw, b);
-    } else if (engine === 'openlibrary') {
-      await fetchOpenLibrary(raw, b);
-    } else if (engine === 'google') {
-      await fetchGoogle(raw, b);
-    } else {
-      // all : BnF → OpenLibrary → Google Books
-      await fetchBnF(raw, b);
-      if (!b.titre) await fetchOpenLibrary(raw, b);
-      if (!b.titre) await fetchGoogle(raw, b);
+    for (const fetcher of fetchers) {
+      if (b.titre) break;
+      await fetcher(raw, b);
     }
   } catch(e) {}
 
   setStatus(b.titre ? '' : 'ISBN introuvable — remplis manuellement.');
   fillForm(b);
+}
+
+// ── CONTRÔLE DOUBLONS ──────────────────────────────────
+async function checkDuplicate(isbn, cfg) {
+  if (!cfg.token || !cfg.dbId) return { isDuplicate: false };
+  try {
+    const res = await fetch(notionUrl('/v1/databases/' + cfg.dbId + '/query', cfg), {
+      method: 'POST',
+      headers: notionHeaders(cfg.token),
+      body: JSON.stringify({
+        filter: {
+          property: 'ISBN',
+          rich_text: { equals: isbn }
+        }
+      })
+    });
+    if (!res.ok) return { isDuplicate: false };
+    const data = await res.json();
+    if (data.results?.length > 0) {
+      const existing = data.results[0];
+      const title = existing.properties?.Nom?.title?.[0]?.plain_text || '(sans titre)';
+      return { isDuplicate: true, title };
+    }
+    return { isDuplicate: false };
+  } catch(e) {
+    return { isDuplicate: false };
+  }
 }
 
 function fillForm(b) {
@@ -636,8 +595,36 @@ async function sendToNotion() {
     return;
   }
 
-  // Avertir si des propriétés ont été créées
-  let syncMsg = '';
+  // Contrôle doublon
+  const isbn = get('f-isbn');
+  if (isbn) {
+    notionStatus.textContent = '🔄 Vérification des doublons…';
+    const dup = await checkDuplicate(isbn, cfg);
+    if (dup.isDuplicate) {
+      notionStatus.innerHTML = `⚠️ Ce livre (<strong>${dup.title}</strong>) existe déjà dans ta base Notion (ISBN : ${isbn}).<br>
+        <button onclick="confirmSend()" style="margin-top:8px;height:34px;font-size:13px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Ajouter quand même</button>
+        <button onclick="document.getElementById('notion-status').textContent=''" style="margin-top:8px;margin-left:8px;height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Annuler</button>`;
+      notionStatus.style.whiteSpace = 'normal';
+      return;
+    }
+  }
+
+  await doSend(cfg, sync);
+}
+
+async function confirmSend() {
+  const cfg = getConfig();
+  const notionStatus = document.getElementById('notion-status');
+  notionStatus.textContent = '🔄 Envoi en cours…';
+  const sync = await syncDatabaseProps(cfg.token, cfg.dbId, cfg);
+  if (!sync.ok) { notionStatus.textContent = '🔴 ' + sync.error; return; }
+  await doSend(cfg, sync);
+}
+
+async function doSend(cfg, sync) {
+  const get = id => document.getElementById(id)?.value?.trim() || '';
+  const cb  = id => document.getElementById(id)?.checked || false;
+  const notionStatus = document.getElementById('notion-status');
   if (sync.created.length > 0) syncMsg += ' Propriétés créées : ' + sync.created.join(', ') + '.';
   if (sync.conflicts.length > 0) syncMsg += ' ⚠️ Conflits ignorés : ' + sync.conflicts.map(c => c.name).join(', ') + '.';
 
