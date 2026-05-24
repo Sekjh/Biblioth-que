@@ -83,7 +83,7 @@
 <input type="file" id="file-input" accept="image/*" capture="environment">
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.4 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.5 — 24052026</span></h1>
 
   <div class="card">
     <button class="outline scan-btn" onclick="startScan()">
@@ -195,6 +195,49 @@
   </div>
 </div>
 
+<!-- Devlog -->
+<div style="text-align:center;padding:1.5rem 0 2rem;">
+  <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;width:auto;height:auto;padding:4px 8px;text-decoration:underline;text-underline-offset:3px;">
+    changelog
+  </button>
+</div>
+
+<div id="devlog" style="display:none;max-width:600px;margin:0 auto 2rem;padding:0 1rem;">
+  <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+    <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;">Changelog</span>
+      <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
+    </div>
+    <div style="font-size:12px;line-height:1.7;">
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.5</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Remplacement du scanner par Quagga2 en fallback — corrige l'échec de BarcodeDetector sur Brave iOS</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.4</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Ajout du scanner caméra (BarcodeDetector natif + fallback photo) — numéro de version affiché dans l'interface</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.3</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">BnF (catalogue national français) ajouté comme source principale — corrige l'échec sur les éditions françaises récentes</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.2</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Export en fichier HTML autonome — sources OpenLibrary + Google Books, saisie manuelle complète, génération du bloc Notion</div>
+      </div>
+      <div style="padding:0.75rem 1rem;">
+        <span style="font-weight:600;color:var(--text);">v0.1</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Prototype initial — lookup ISBN, formulaire (thème/sous-thème, statut, note, état, collection), bloc Notion copiable</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const THEMES = {
   "Philosophie": ["Esthétique","Éthique","Épistémologie","Métaphysique","Philosophie politique","Philosophie du langage","Logique","Philosophie des sciences","Histoire de la philosophie","Phénoménologie","Philosophie morale"],
@@ -225,57 +268,68 @@ function toggleLu() {
 // ── SCAN ──────────────────────────────────────────────
 let stream = null;
 let scanLoop = null;
-let detector = null;
+
+function loadQuagga() {
+  return new Promise((resolve) => {
+    if (window.Quagga) { resolve(true); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js';
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+}
 
 async function startScan() {
-  // Méthode 1 : BarcodeDetector natif (iOS 17.4+, Chrome Android)
-  if ('BarcodeDetector' in window) {
-    try {
-      detector = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128'] });
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
-      });
-      const video = document.getElementById('scanner-video');
-      video.srcObject = stream;
-      await video.play();
-      document.getElementById('scanner-overlay').classList.add('active');
-      document.getElementById('scanner-msg').textContent = '';
-      runScanLoop(video);
-      return;
-    } catch(e) {
-      // BarcodeDetector dispo mais caméra refusée ou autre erreur
-      if (e.name === 'NotAllowedError') {
-        setStatus('Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.');
-        return;
-      }
-      // Sinon tenter fallback
-    }
-  }
+  const msg = document.getElementById('scanner-msg');
+  msg.textContent = '';
 
-  // Méthode 2 : getUserMedia + canvas + décodage via API image (fallback)
+  // Demander accès caméra
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' } }
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
     });
-    const video = document.getElementById('scanner-video');
-    video.srcObject = stream;
-    await video.play();
-    document.getElementById('scanner-overlay').classList.add('active');
-    document.getElementById('scanner-msg').textContent = 'BarcodeDetector non disponible — scan limité';
-    // Essai toutes les 500ms via une heuristique simple
-    runScanLoop(video);
-    return;
   } catch(e) {
     if (e.name === 'NotAllowedError') {
       setStatus('Accès caméra refusé. Active-le dans Réglages iOS → Brave → Caméra.');
     } else {
-      // Méthode 3 : input file capture (fonctionne partout, photo unique)
       useCaptureInput();
     }
+    return;
   }
+
+  const video = document.getElementById('scanner-video');
+  video.srcObject = stream;
+  await video.play();
+  document.getElementById('scanner-overlay').classList.add('active');
+
+  // Méthode 1 : BarcodeDetector natif — vérifie qu'il fonctionne vraiment
+  if ('BarcodeDetector' in window) {
+    try {
+      const bd = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128'] });
+      const testCanvas = document.createElement('canvas');
+      testCanvas.width = 1; testCanvas.height = 1;
+      await bd.detect(testCanvas); // lève une exception si bloqué par Brave
+      runNativeScan(bd, video);
+      return;
+    } catch(e) {}
+  }
+
+  // Méthode 2 : Quagga2
+  msg.textContent = 'Chargement du décodeur…';
+  const loaded = await loadQuagga();
+  if (loaded && window.Quagga) {
+    msg.textContent = '';
+    runQuaggaScan();
+    return;
+  }
+
+  // Méthode 3 : photo unique
+  closeScanner();
+  useCaptureInput();
 }
 
-function runScanLoop(video) {
+function runNativeScan(bd, video) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   scanLoop = setInterval(async () => {
@@ -283,47 +337,78 @@ function runScanLoop(video) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0);
-    if (detector) {
-      try {
-        const results = await detector.detect(canvas);
-        for (const r of results) {
-          const val = r.rawValue;
-          if (/^\d{8,13}$/.test(val)) {
-            closeScanner();
-            document.getElementById('isbn-input').value = val;
-            lookup();
-            return;
-          }
+    try {
+      const results = await bd.detect(canvas);
+      for (const r of results) {
+        if (/^\d{8,13}$/.test(r.rawValue)) {
+          closeScanner();
+          document.getElementById('isbn-input').value = r.rawValue;
+          lookup();
+          return;
         }
-      } catch(e) {}
-    }
-  }, 350);
+      }
+    } catch(e) {}
+  }, 300);
 }
 
-function useCaptureInput() {
-  // Dernier recours : photo via input[capture], décodage côté client
+function runQuaggaScan() {
+  Quagga.init({
+    inputStream: {
+      type: 'LiveStream',
+      target: document.getElementById('scanner-video'),
+      constraints: { facingMode: 'environment' }
+    },
+    decoder: { readers: ['ean_reader','ean_8_reader','code_128_reader'] },
+    locate: true
+  }, (err) => {
+    if (err) {
+      document.getElementById('scanner-msg').textContent = '';
+      closeScanner();
+      useCaptureInput();
+      return;
+    }
+    Quagga.start();
+  });
+
+  Quagga.onDetected((result) => {
+    const code = result.codeResult.code;
+    if (/^\d{8,13}$/.test(code)) {
+      Quagga.stop();
+      closeScanner();
+      document.getElementById('isbn-input').value = code;
+      lookup();
+    }
+  });
+}
+
+async function useCaptureInput() {
   const fi = document.getElementById('file-input');
   fi.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setStatus('Analyse de l\'image…');
-    if ('BarcodeDetector' in window) {
-      try {
-        const bd = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128'] });
-        const bitmap = await createImageBitmap(file);
-        const results = await bd.detect(bitmap);
-        for (const r of results) {
-          if (/^\d{8,13}$/.test(r.rawValue)) {
-            document.getElementById('isbn-input').value = r.rawValue;
-            lookup();
-            return;
-          }
+    // Essai Quagga sur l'image
+    const loaded = await loadQuagga();
+    if (loaded && window.Quagga) {
+      const url = URL.createObjectURL(file);
+      Quagga.decodeSingle({
+        src: url,
+        numOfWorkers: 0,
+        decoder: { readers: ['ean_reader','ean_8_reader','code_128_reader'] },
+        locate: true
+      }, (result) => {
+        URL.revokeObjectURL(url);
+        if (result?.codeResult?.code && /^\d{8,13}$/.test(result.codeResult.code)) {
+          document.getElementById('isbn-input').value = result.codeResult.code;
+          lookup();
+        } else {
+          setStatus('Code-barres non détecté. Saisis l\'ISBN manuellement.');
         }
-        setStatus('Code-barres non détecté. Saisis l\'ISBN manuellement.');
-      } catch(e) { setStatus('Erreur d\'analyse. Saisis l\'ISBN manuellement.'); }
-    } else {
-      setStatus('Scanner non supporté sur ce navigateur. Saisis l\'ISBN manuellement.');
+        fi.value = '';
+      });
+      return;
     }
+    setStatus('Scanner non supporté. Saisis l\'ISBN manuellement.');
     fi.value = '';
   };
   fi.click();
@@ -332,10 +417,10 @@ function useCaptureInput() {
 function closeScanner() {
   document.getElementById('scanner-overlay').classList.remove('active');
   if (scanLoop) { clearInterval(scanLoop); scanLoop = null; }
+  try { if (window.Quagga) Quagga.stop(); } catch(e) {}
   if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
   const v = document.getElementById('scanner-video');
   v.srcObject = null;
-  detector = null;
 }
 
 // ── LOOKUP ─────────────────────────────────────────────
@@ -438,6 +523,11 @@ function copyResult() {
 }
 
 function setStatus(msg) { document.getElementById('status').textContent=msg; }
+
+function toggleDevlog() {
+  const d = document.getElementById('devlog');
+  d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
 
 initThemes();
 </script>
