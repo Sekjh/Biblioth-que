@@ -85,7 +85,7 @@
 <input type="file" id="file-input" accept="image/*" capture="environment">
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.12 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.13 — 24052026</span></h1>
 
   <div class="card">
     <button class="outline scan-btn" onclick="startScan()">
@@ -212,17 +212,22 @@
     </div>
     <div style="font-size:12px;line-height:1.7;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.12</span>
+        <span style="font-weight:600;color:var(--text);">v0.13</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="color:var(--muted);margin-top:3px;">Ajout zbar-wasm comme fallback quand BarcodeDetector absent (iOS < 17.4, Brave)</div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.13</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Debug complet étape par étape : overlay ouvert en premier, message à chaque jalon (caméra, vidéo, BarcodeDetector, frames)</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.12</span>
+        <span style="font-weight:600;color:var(--text);">v0.13</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner : readyState abaissé de 4 à 2 — corrige le blocage de la boucle d'analyse sur Brave iOS</div>
       </div>
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.12</span>
+        <span style="font-weight:600;color:var(--text);">v0.13</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
         <div style="color:var(--muted);margin-top:3px;">Scanner simplifié : BarcodeDetector direct sur élément vidéo (sans canvas), debug visuel en temps réel, suppression des dépendances externes</div>
       </div>
@@ -305,32 +310,49 @@ function toggleLu() {
 // ── SCAN ──────────────────────────────────────────────
 let stream = null;
 let rafId = null;
+let zbarModule = null;
+
+function loadZbarWasm() {
+  return new Promise((resolve) => {
+    if (zbarModule) { resolve(true); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.10.1/dist/index.js';
+    s.onload = async () => {
+      try {
+        // zbar-wasm s'initialise via ZBar.init()
+        if (window.ZBar) {
+          await window.ZBar.init();
+          zbarModule = window.ZBar;
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      } catch(e) { resolve(false); }
+    };
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+}
 
 async function startScan() {
   const msg = document.getElementById('scanner-msg');
-  // Ouvrir l'overlay immédiatement pour que msg soit visible
   document.getElementById('scanner-overlay').classList.add('active');
   msg.textContent = '1. Ouverture caméra…';
 
-  // Ouvrir la caméra
   try {
     stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal:'environment' } }
     });
   } catch(e) {
-    msg.textContent = '🔴 Caméra : ' + e.name + ' — ' + e.message;
+    msg.textContent = '🔴 Caméra : ' + e.name;
     return;
   }
 
-  msg.textContent = '2. Caméra OK, injection vidéo…';
-
-  // Injecter la vidéo
+  msg.textContent = '2. Injection vidéo…';
   const vp = document.getElementById('scanner-viewport');
   vp.innerHTML = '';
   const video = document.createElement('video');
-  video.autoplay = true;
-  video.playsInline = true;
-  video.muted = true;
+  video.autoplay = true; video.playsInline = true; video.muted = true;
   video.setAttribute('playsinline', '');
   video.style.cssText = 'width:100%;display:block;';
   vp.appendChild(video);
@@ -338,28 +360,53 @@ async function startScan() {
 
   try {
     await video.play();
-    msg.textContent = '3. Vidéo en lecture, readyState=' + video.readyState;
+    msg.textContent = '3. Vidéo OK (readyState=' + video.readyState + ')';
   } catch(e) {
-    msg.textContent = '🔴 play() échoué : ' + e.message;
+    msg.textContent = '🔴 play() : ' + e.message;
     return;
   }
 
-  // Vérifier BarcodeDetector
-  if (!('BarcodeDetector' in window)) {
-    msg.textContent = '🔴 BarcodeDetector absent';
+  // Méthode 1 : BarcodeDetector natif
+  if ('BarcodeDetector' in window) {
+    msg.textContent = '4. BarcodeDetector trouvé, init…';
+    try {
+      const bd = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128','upc_a','upc_e'] });
+      msg.textContent = '✅ Prêt — approche le code-barres';
+      runRaf(video, async () => {
+        const r = await bd.detect(video);
+        return r.length ? r[0].rawValue : null;
+      });
+      return;
+    } catch(e) {
+      msg.textContent = '🟡 BarcodeDetector KO, chargement zbar-wasm…';
+    }
+  } else {
+    msg.textContent = '4. BarcodeDetector absent, chargement zbar-wasm…';
+  }
+
+  // Méthode 2 : zbar-wasm
+  const loaded = await loadZbarWasm();
+  if (loaded && zbarModule) {
+    msg.textContent = '✅ zbar-wasm prêt — approche le code-barres';
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    runRaf(video, async () => {
+      if (video.readyState < 2 || video.videoWidth === 0) return null;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const syms = await zbarModule.scanImageData(imgData);
+      return syms.length ? syms[0].decode() : null;
+    });
     return;
   }
-  msg.textContent = '4. BarcodeDetector présent, init…';
 
-  let bd;
-  try {
-    bd = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'upc_a', 'upc_e'] });
-    msg.textContent = '5. Init OK — approche le code-barres';
-  } catch(e) {
-    msg.textContent = '🔴 Init BarcodeDetector : ' + e.message;
-    return;
-  }
+  msg.textContent = '🔴 Aucun décodeur disponible — saisie manuelle uniquement';
+}
 
+function runRaf(video, decodeFn) {
+  const msg = document.getElementById('scanner-msg');
   let frameCount = 0;
   let lastTs = 0;
 
@@ -368,37 +415,24 @@ async function startScan() {
     rafId = requestAnimationFrame(tick);
     if (ts - lastTs < 400) return;
     lastTs = ts;
-
-    if (video.readyState < 2) {
-      msg.textContent = '🟡 Attente vidéo (readyState=' + video.readyState + ')';
-      return;
-    }
-
     frameCount++;
-    msg.textContent = '🟢 Frame ' + frameCount + ' (readyState=' + video.readyState + ')';
-
+    msg.textContent = '🟢 Frame ' + frameCount + '…';
     try {
-      const results = await bd.detect(video);
-      if (results.length > 0) {
-        const val = results[0].rawValue;
-        if (/^\d{8,13}$/.test(val)) {
-          msg.textContent = '✅ Lu : ' + val;
-          setTimeout(() => {
-            closeScanner();
-            document.getElementById('isbn-input').value = val;
-            lookup();
-          }, 300);
-        } else {
-          msg.textContent = '⚠️ Lu "' + val + '" — format non reconnu';
-        }
+      const val = await decodeFn();
+      if (val && /^\d{8,13}$/.test(val)) {
+        msg.textContent = '✅ Lu : ' + val;
+        setTimeout(() => {
+          closeScanner();
+          document.getElementById('isbn-input').value = val;
+          lookup();
+        }, 300);
+      } else if (val) {
+        msg.textContent = '⚠️ Lu "' + val + '" (non EAN)';
       }
     } catch(e) {
-      if (frameCount <= 2) {
-        msg.textContent = '🔴 Erreur détection : ' + e.message;
-      }
+      if (frameCount <= 3) msg.textContent = '🔴 ' + e.message;
     }
   }
-
   rafId = requestAnimationFrame(tick);
 }
 
@@ -414,17 +448,34 @@ async function useCaptureInput() {
   fi.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setStatus('Analyse de l\'image…');
+    setStatus('Analyse…');
     if ('BarcodeDetector' in window) {
       try {
         const bd = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128','upc_a','upc_e'] });
         const bmp = await createImageBitmap(file);
-        const results = await bd.detect(bmp);
-        if (results.length && /^\d{8,13}$/.test(results[0].rawValue)) {
-          document.getElementById('isbn-input').value = results[0].rawValue;
+        const r = await bd.detect(bmp);
+        if (r.length && /^\d{8,13}$/.test(r[0].rawValue)) {
+          document.getElementById('isbn-input').value = r[0].rawValue;
           lookup(); fi.value=''; return;
         }
       } catch(e) {}
+    }
+    const loaded = await loadZbarWasm();
+    if (loaded && zbarModule) {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      await new Promise(r => img.onload = r);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(img.src);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const syms = await zbarModule.scanImageData(imgData);
+      if (syms.length && /^\d{8,13}$/.test(syms[0].decode())) {
+        document.getElementById('isbn-input').value = syms[0].decode();
+        lookup(); fi.value=''; return;
+      }
     }
     setStatus('Code-barres non détecté. Saisis l\'ISBN manuellement.');
     fi.value = '';
