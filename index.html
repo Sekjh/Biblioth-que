@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.36 — 25052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.37 — 25052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -180,6 +180,7 @@
           <input type="checkbox" id="f-collection">
           <label for="f-collection">Livre de collection</label>
         </div>
+        <p id="collection-hint" style="grid-column:1/-1;font-size:11px;color:var(--muted);margin-top:-6px;"></p>
         <div class="field full">
           <label>Commentaire</label>
           <textarea id="f-comment" rows="3" placeholder="Notes personnelles…"></textarea>
@@ -239,6 +240,16 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
     <div style="font-size:12px;line-height:1.8;">
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.37</span>
+        <span style="color:var(--muted);margin-left:6px;">25052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Détection automatique "Livre de collection" — pré-coche la case si Pléiade, Bouquins, Quarto, Classiques Garnier, édition ancienne (&lt;1900) détectés</div>
+          <div style="color:var(--muted);">• Message discret indique la raison de la détection — modifiable manuellement</div>
+        </div>
+      </div>
 
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.36</span>
@@ -611,8 +622,61 @@ function fillForm(b) {
   document.getElementById('source-badge').textContent=b.source?`Source : ${b.source}`:'Saisie manuelle';
   const img=document.getElementById('cover-img');
   if(b.couverture){img.src=b.couverture;img.style.display='block';}else{img.style.display='none';}
+
+  // Détection automatique livre de collection
+  const collectionHint = detectCollection(b);
+  document.getElementById('f-collection').checked = collectionHint.detected;
+  const hintEl = document.getElementById('collection-hint');
+  hintEl.textContent = collectionHint.detected ? `✦ Coché automatiquement (${collectionHint.reason})` : '';
+
   document.getElementById('form-section').style.display='block';
   document.getElementById('output-section').style.display='none';
+}
+
+function detectCollection(b) {
+  const COLLECTION_KEYWORDS = [
+    'pléiade', 'pleiade',
+    'bouquins', 'quarto',
+    'bibliothèque de la pléiade',
+    'folio classique', 'folio plus classique',
+    'classiques garnier', 'classiques de poche',
+    'the library of america',
+    'everyman', "penguin classics deluxe",
+    'bibliothèque de la pléiade',
+  ];
+  const COLLECTION_PUBLISHERS = [
+    'gallimard', 'robert laffont', 'flammarion',
+  ];
+  const EDITION_KEYWORDS = [
+    'édition originale', 'première édition', 'edition originale',
+    'tirage limité', 'numéroté', 'numerote',
+  ];
+
+  const col = (b.collection || '').toLowerCase();
+  const edit = (b.editeur || '').toLowerCase();
+  const titre = (b.titre || '').toLowerCase();
+  const date = parseInt(b.datepub || b.dateed || '9999');
+
+  // Vérifier mots-clés collection
+  for (const kw of COLLECTION_KEYWORDS) {
+    if (col.includes(kw) || titre.includes(kw)) {
+      return { detected: true, reason: `collection "${b.collection || kw}"` };
+    }
+  }
+
+  // Vérifier mots-clés édition
+  for (const kw of EDITION_KEYWORDS) {
+    if (col.includes(kw) || titre.includes(kw)) {
+      return { detected: true, reason: kw };
+    }
+  }
+
+  // Livre ancien (avant 1900) chez un grand éditeur
+  if (date < 1900 && COLLECTION_PUBLISHERS.some(p => edit.includes(p))) {
+    return { detected: true, reason: `édition ancienne (${date})` };
+  }
+
+  return { detected: false, reason: '' };
 }
 
 // ── CONFIG ─────────────────────────────────────────────
