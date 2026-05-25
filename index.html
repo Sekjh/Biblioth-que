@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.33 — 25052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.34 — 25052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -239,6 +239,15 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
     <div style="font-size:12px;line-height:1.8;">
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.34</span>
+        <span style="color:var(--muted);margin-left:6px;">25052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Prompt flashcard recentré sur les idées et thèmes du livre uniquement — suppression du contexte, du style et du public cible</div>
+        </div>
+      </div>
 
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.33</span>
@@ -948,7 +957,7 @@ async function generateFiche() {
   btn.disabled = true;
   status.textContent = '✦ Génération en cours…';
 
-  const prompt = `En 3-4 phrases maximum, rédige une flashcard pour le livre "${titre}" de ${auteur || 'auteur inconnu'}${datepub ? ' ('+datepub+')' : ''}. Couvre en une phrase : de quoi ça parle, ce qui le rend marquant, et pour qui c'est fait. Ton neutre, direct, en français. Sans titre ni introduction.`;
+  const prompt = `En 2-3 phrases, décris uniquement les idées, thèmes et pensées centrales du livre "${titre}" de ${auteur || 'auteur inconnu'}${datepub ? ' ('+datepub+')' : ''}. Pas de contexte, pas de style, pas de public cible. Juste l'essentiel de ce que le livre dit ou explore. En français, sans titre ni introduction.`;
 
   try {
     const fiche = await callClaude(prompt);
