@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.30 — 25052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.31 — 25052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -105,6 +105,10 @@
         <div class="field"><label>Thème</label><select id="f-theme" onchange="updateSousTheme()"></select></div>
         <div class="field"><label>Sous-thème</label><select id="f-soustheme"></select></div>
       </div>
+      <button class="outline" onclick="suggestTheme()" id="btn-suggest-theme" style="height:34px;font-size:12px;margin-top:4px;">
+        ✦ Suggérer via IA
+      </button>
+      <p id="theme-ai-status" class="status" style="font-size:11px;"></p>
     </div>
 
     <div class="card">
@@ -155,6 +159,10 @@
         <div class="field hidden full" id="fiche-block" style="grid-column:1/-1;">
           <label>Fiche de lecture</label>
           <textarea id="f-fiche" rows="6" placeholder="Notes de lecture, analyse, passages marquants…"></textarea>
+          <button class="outline" onclick="generateFiche()" id="btn-generate-fiche" style="height:34px;font-size:12px;margin-top:6px;">
+            ✦ Générer via IA
+          </button>
+          <p id="fiche-ai-status" class="status" style="font-size:11px;"></p>
         </div>
       </div>
     </div>
@@ -190,6 +198,10 @@
 <div id="config-panel" style="display:none;max-width:600px;margin:0 auto 1rem;padding:0 1rem;">
   <div class="card">
     <p class="section-title">Configuration Notion</p>
+    <div class="field">
+      <label>Clé API Anthropic (pour les suggestions IA)</label>
+      <input type="text" id="cfg-anthropic" placeholder="sk-ant-…" style="font-family:monospace;font-size:13px;">
+    </div>
     <div class="field">
       <label>URL du proxy Cloudflare</label>
       <input type="text" id="cfg-proxy" placeholder="https://xxx.workers.dev" style="font-family:monospace;font-size:13px;">
@@ -227,6 +239,19 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
     <div style="font-size:12px;line-height:1.8;">
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.31</span>
+        <span style="color:var(--muted);margin-left:6px;">25052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Bouton "Suggérer via IA" sur le bloc thème/sous-thème — suggestion automatique depuis titre et auteur</div>
+          <div style="color:var(--muted);">• Bouton "Générer via IA" sur la fiche de lecture — génération d'une fiche 200-300 mots depuis titre/auteur/éditeur/date</div>
+          <div style="color:var(--muted);">• Utilise Claude Haiku via API Anthropic (coût minimal)</div>
+          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Configuration Notion</div>
+          <div style="color:var(--muted);">• Champ clé API Anthropic ajouté dans le panneau de configuration (stockée en localStorage)</div>
+        </div>
+      </div>
 
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.30</span>
@@ -528,9 +553,10 @@ function fillForm(b) {
 })();
 function getConfig() {
   return {
-    token: localStorage.getItem('notion_token') || '',
-    dbId:  localStorage.getItem('notion_dbid') || '',
-    proxy: localStorage.getItem('notion_proxy') || ''
+    token:       localStorage.getItem('notion_token') || '',
+    dbId:        localStorage.getItem('notion_dbid') || '',
+    proxy:       localStorage.getItem('notion_proxy') || '',
+    anthropicKey: localStorage.getItem('anthropic_key') || ''
   };
 }
 
@@ -660,6 +686,8 @@ async function saveConfig() {
     statusEl.textContent = '⚠️ URL du proxy invalide (doit commencer par https://).';
     return;
   }
+  const anthropicKey = document.getElementById('cfg-anthropic').value.trim();
+  if (anthropicKey) localStorage.setItem('anthropic_key', anthropicKey);
   localStorage.setItem('notion_token', token);
   localStorage.setItem('notion_dbid', dbId);
   localStorage.setItem('notion_proxy', proxy);
@@ -693,6 +721,7 @@ function toggleConfig() {
   p.style.display = visible ? 'none' : 'block';
   if (!visible) {
     const cfg = getConfig();
+    document.getElementById('cfg-anthropic').value = cfg.anthropicKey;
     document.getElementById('cfg-proxy').value = cfg.proxy;
     document.getElementById('cfg-token').value = cfg.token;
     document.getElementById('cfg-dbid').value = cfg.dbId;
@@ -814,7 +843,110 @@ async function doSend(cfg, sync) {
   }
 }
 
-function setStatus(msg) { document.getElementById('status').textContent=msg; }
+// ── IA ─────────────────────────────────────────────────
+async function callClaude(prompt) {
+  const cfg = getConfig();
+  if (!cfg.anthropicKey) throw new Error('Clé API Anthropic non configurée (voir ⚙ configuration).');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': cfg.anthropicKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'Erreur API ' + res.status);
+  }
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+async function suggestTheme() {
+  const titre  = document.getElementById('f-titre').value.trim();
+  const auteur = document.getElementById('f-auteur').value.trim();
+  if (!titre && !auteur) {
+    document.getElementById('theme-ai-status').textContent = '⚠️ Renseigne d\'abord le titre et/ou l\'auteur.';
+    return;
+  }
+  const btn = document.getElementById('btn-suggest-theme');
+  const status = document.getElementById('theme-ai-status');
+  btn.disabled = true;
+  status.textContent = '✦ Analyse en cours…';
+
+  const themes = Object.keys(THEMES);
+  const sousThemes = Object.entries(THEMES).map(([t, ss]) => `${t} : ${ss.join(', ')}`).join('\n');
+
+  const prompt = `Tu es un bibliothécaire expert. Pour le livre "${titre}" de ${auteur || 'auteur inconnu'}, choisis le thème et le sous-thème les plus appropriés parmi ces options exactes :
+
+${sousThemes}
+
+Réponds UNIQUEMENT avec ce format JSON, sans texte autour :
+{"theme": "...", "sousTheme": "..."}`;
+
+  try {
+    const raw = await callClaude(prompt);
+    const json = JSON.parse(raw.match(/\{.*\}/s)?.[0] || raw);
+    const theme = json.theme || '';
+    const sousTheme = json.sousTheme || '';
+
+    // Vérifier que les valeurs sont dans nos listes
+    if (theme && THEMES[theme]) {
+      document.getElementById('f-theme').value = theme;
+      updateSousTheme();
+      if (sousTheme && THEMES[theme].includes(sousTheme)) {
+        document.getElementById('f-soustheme').value = sousTheme;
+      }
+      status.textContent = `✓ Suggestion : ${theme}${sousTheme ? ' › ' + sousTheme : ''}`;
+    } else {
+      status.textContent = '⚠️ Suggestion hors liste — vérifie manuellement.';
+    }
+  } catch(e) {
+    status.textContent = '🔴 ' + e.message;
+  }
+  btn.disabled = false;
+}
+
+async function generateFiche() {
+  const titre    = document.getElementById('f-titre').value.trim();
+  const auteur   = document.getElementById('f-auteur').value.trim();
+  const editeur  = document.getElementById('f-editeur').value.trim();
+  const datepub  = document.getElementById('f-datepub').value.trim();
+  if (!titre) {
+    document.getElementById('fiche-ai-status').textContent = '⚠️ Renseigne d\'abord le titre.';
+    return;
+  }
+  const btn = document.getElementById('btn-generate-fiche');
+  const status = document.getElementById('fiche-ai-status');
+  btn.disabled = true;
+  status.textContent = '✦ Génération en cours…';
+
+  const prompt = `Tu es un critique littéraire. Rédige une fiche de lecture concise (200-300 mots) pour :
+- Titre : ${titre}
+- Auteur : ${auteur || 'inconnu'}
+${editeur ? '- Éditeur : ' + editeur : ''}
+${datepub ? '- Date de publication : ' + datepub : ''}
+
+La fiche doit couvrir : contexte de l'œuvre, thèmes principaux, style et portée. Ton neutre et analytique. En français. Sans titre ni introduction, commence directement par le contenu.`;
+
+  try {
+    const fiche = await callClaude(prompt);
+    document.getElementById('f-fiche').value = fiche.trim();
+    status.textContent = '✓ Fiche générée — vérifie et modifie si nécessaire.';
+  } catch(e) {
+    status.textContent = '🔴 ' + e.message;
+  }
+  btn.disabled = false;
+}
+
+
 
 function toggleDevlog() {
   const d = document.getElementById('devlog');
