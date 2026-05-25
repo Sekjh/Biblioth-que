@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.34 — 25052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.36 — 25052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -239,6 +239,26 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
     <div style="font-size:12px;line-height:1.8;">
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.36</span>
+        <span style="color:var(--muted);margin-left:6px;">25052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
+          <div style="color:var(--muted);">• Correction : déclaration async function lookup() manquante — causait une SyntaxError au chargement</div>
+        </div>
+      </div>
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.35</span>
+        <span style="color:var(--muted);margin-left:6px;">25052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
+          <div style="color:var(--muted);">• Open Library Covers API ajoutée comme source de couverture de secours — améliore la couverture des livres anciens</div>
+          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Ajout Notion</div>
+          <div style="color:var(--muted);">• En cas de doublon : nouveau bouton "Mettre à jour la fiche" pour ajouter la flashcard sur un livre existant sans dupliquer l'entrée</div>
+        </div>
+      </div>
 
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.34</span>
@@ -493,6 +513,24 @@ async function fetchGoogle(raw, b) {
   if(b.titre) b.source='Google Books';
 }
 
+async function fetchCover(raw) {
+  // Open Library Covers API — très bonne couverture pour livres anciens
+  const isbns = [raw];
+  const isbn10 = isbn13to10(raw);
+  if (isbn10) isbns.push(isbn10);
+  for (const isbn of isbns) {
+    const url = `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
+    try {
+      const res = await fetch(url, { method: 'HEAD' });
+      // OL retourne une image 1x1 si pas de couverture
+      if (res.ok && parseInt(res.headers.get('content-length') || '9999') > 1000) {
+        return url;
+      }
+    } catch(e) {}
+  }
+  return null;
+}
+
 async function lookup() {
   const raw = document.getElementById('isbn-input').value.trim().replace(/[-\s]/g,'');
   if (!raw) return;
@@ -517,6 +555,13 @@ async function lookup() {
   } catch(e) {}
 
   setStatus(b.titre ? '' : 'ISBN introuvable — remplis manuellement.');
+
+  // Fallback couverture Open Library si aucune source n'en a fourni
+  if (!b.couverture) {
+    const cover = await fetchCover(raw);
+    if (cover) b.couverture = cover;
+  }
+
   fillForm(b);
 }
 
@@ -539,7 +584,8 @@ async function checkDuplicate(isbn, cfg) {
     if (data.results?.length > 0) {
       const existing = data.results[0];
       const title = existing.properties?.Nom?.title?.[0]?.plain_text || '(sans titre)';
-      return { isDuplicate: true, title };
+      const pageId = existing.id;
+      return { isDuplicate: true, title, pageId };
     }
     return { isDuplicate: false };
   } catch(e) {
@@ -785,9 +831,12 @@ async function sendToNotion() {
     notionStatus.textContent = '🔄 Vérification des doublons…';
     const dup = await checkDuplicate(isbn, cfg);
     if (dup.isDuplicate) {
-      notionStatus.innerHTML = `⚠️ Ce livre (<strong>${dup.title}</strong>) existe déjà dans ta base Notion (ISBN : ${isbn}).<br>
-        <button onclick="confirmSend()" style="margin-top:8px;height:34px;font-size:13px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Ajouter quand même</button>
-        <button onclick="document.getElementById('notion-status').textContent=''" style="margin-top:8px;margin-left:8px;height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Annuler</button>`;
+      notionStatus.innerHTML = `⚠️ <strong>${dup.title}</strong> existe déjà dans ta base (ISBN : ${isbn}).<br>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <button onclick="confirmSend()" style="height:34px;font-size:13px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Ajouter quand même</button>
+          <button onclick="updateFiche('${dup.pageId}')" style="height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Mettre à jour la fiche</button>
+          <button onclick="document.getElementById('notion-status').textContent=''" style="height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Annuler</button>
+        </div>`;
       notionStatus.style.whiteSpace = 'normal';
       return;
     }
@@ -803,6 +852,41 @@ async function confirmSend() {
   const sync = await syncDatabaseProps(cfg.token, cfg.dbId, cfg);
   if (!sync.ok) { notionStatus.textContent = '🔴 ' + sync.error; return; }
   await doSend(cfg, sync);
+}
+
+async function updateFiche(pageId) {
+  const cfg = getConfig();
+  const notionStatus = document.getElementById('notion-status');
+  const fiche = document.getElementById('f-fiche')?.value?.trim() || '';
+
+  if (!fiche) {
+    notionStatus.textContent = '⚠️ La fiche de lecture est vide — génère-la ou saisis-la avant de mettre à jour.';
+    return;
+  }
+
+  notionStatus.textContent = '🔄 Mise à jour de la fiche…';
+
+  try {
+    const res = await fetch(notionUrl(`/v1/pages/${pageId}`, cfg), {
+      method: 'PATCH',
+      headers: notionHeaders(cfg.token),
+      body: JSON.stringify({
+        properties: {
+          'Fiche de lecture': { rich_text: [{ text: { content: fiche } }] }
+        }
+      })
+    });
+    if (res.ok) {
+      notionStatus.textContent = '✅ Fiche de lecture mise à jour dans Notion !';
+      notionStatus.style.whiteSpace = 'normal';
+      setTimeout(() => { notionStatus.textContent = ''; notionStatus.style.whiteSpace = ''; }, 4000);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      notionStatus.textContent = '🔴 Erreur Notion : ' + (err.message || res.status);
+    }
+  } catch(e) {
+    notionStatus.textContent = '🔴 Erreur réseau : ' + e.message;
+  }
 }
 
 async function doSend(cfg, sync) {
