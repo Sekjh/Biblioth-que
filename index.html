@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.37 — 25052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.38 — 25052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -156,7 +156,7 @@
             <option>★★★★★</option><option>★★★★☆</option><option>★★★☆☆</option><option>★★☆☆☆</option><option>★☆☆☆☆</option>
           </select>
         </div>
-        <div class="field hidden full" id="fiche-block" style="grid-column:1/-1;">
+        <div class="field full" id="fiche-block" style="grid-column:1/-1;">
           <label>Fiche de lecture</label>
           <textarea id="f-fiche" rows="3" placeholder="Flashcard de lecture…"></textarea>
           <button class="outline" onclick="generateFiche()" id="btn-generate-fiche" style="height:34px;font-size:12px;margin-top:6px;">
@@ -240,6 +240,15 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
     <div style="font-size:12px;line-height:1.8;">
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.38</span>
+        <span style="color:var(--muted);margin-left:6px;">25052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Fiche de lecture visible pour tous les statuts (À lire, En cours, Lu)</div>
+        </div>
+      </div>
 
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.37</span>
@@ -457,7 +466,6 @@ function toggleLu() {
   const lu = document.getElementById('f-statut').value === 'Lu';
   document.getElementById('datelu-block').classList.toggle('hidden', !lu);
   document.getElementById('note-block').classList.toggle('hidden', !lu);
-  document.getElementById('fiche-block').classList.toggle('hidden', !lu);
   document.getElementById('priorite-block').classList.toggle('hidden', lu);
 }
 
@@ -617,7 +625,6 @@ function fillForm(b) {
   document.getElementById('f-datelu-mois').value='';
   document.getElementById('f-datelu-annee').value='';
   document.getElementById('f-fiche').value='';
-  document.getElementById('fiche-block').classList.add('hidden');
   document.getElementById('found-title').textContent=b.titre||(b.isbn?'ISBN : '+b.isbn:'');
   document.getElementById('source-badge').textContent=b.source?`Source : ${b.source}`:'Saisie manuelle';
   const img=document.getElementById('cover-img');
