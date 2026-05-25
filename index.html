@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.23 — 24052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.27 — 24052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -60,7 +60,6 @@
         <option value="bnf">BnF — Bibliothèque nationale de France (recommandé)</option>
         <option value="openlibrary">OpenLibrary</option>
         <option value="google">Google Books</option>
-        <option value="all">Tous (BnF → OpenLibrary → Google Books)</option>
       </select>
     </div>
     <div class="input-row">
@@ -204,48 +203,73 @@
       <span style="font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;">Changelog</span>
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
-    <div style="font-size:12px;line-height:1.7;">
+    <div style="font-size:12px;line-height:1.8;">
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.26</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
+          <div style="color:var(--muted);">• Suppression de l'option "Tous les moteurs" — le moteur choisi est le premier essayé, fallback automatique sur les autres</div>
+          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Interface</div>
+          <div style="color:var(--muted);">• Changelog restructuré par catégories de fonctionnalités</div>
+        </div>
+      </div>
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.25</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
+          <div style="color:var(--muted);">• BnF et OpenLibrary essaient automatiquement l'ISBN-10 équivalent si l'ISBN-13 n'est pas trouvé</div>
+          <div style="color:var(--muted);">• Améliore la couverture des livres anciens (ex. éditions Gallimard années 1950)</div>
+          <div style="color:var(--muted);">• Conversion ISBN-13 → ISBN-10 calculée localement</div>
+        </div>
+      </div>
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.24</span>
+        <span style="color:var(--muted);margin-left:6px;">24052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Ajout Notion</div>
+          <div style="color:var(--muted);">• Correction variable syncMsg non déclarée dans doSend</div>
+        </div>
+      </div>
+
       <div style="padding:0.75rem 1rem;">
         <span style="font-weight:600;color:var(--text);">v0.23</span>
         <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="color:var(--muted);margin-top:6px;line-height:1.8;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:4px;">Lookup ISBN</div>
-          <div>• Saisie manuelle de l'ISBN (13 ou 10 chiffres)</div>
-          <div>• Moteur préférentiel configurable : BnF (défaut), OpenLibrary, Google Books</div>
-          <div>• Fallback automatique sur les autres sources si le moteur préféré ne trouve rien</div>
-          <div>• BnF via API SRU UNIMARC — meilleure couverture livres français récents</div>
-          <div>• Affichage de la couverture et de la source utilisée</div>
-
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:4px;">Formulaire</div>
-          <div>• Données bibliographiques : titre, auteur(s), nationalité, éditeur, collection, ISBN, date de publication originale, date de l'édition, nombre de pages</div>
-          <div>• Classification : thème (11 catégories) et sous-thème (listes contextuelles), vides par défaut</div>
-          <div>• Suivi de lecture : statut (À lire / En cours / Lu), priorité, date de lecture, note ★</div>
-          <div>• État physique : état du livre, livre de collection (checkbox), commentaire libre</div>
-          <div>• Tous les champs modifiables manuellement après lookup</div>
-
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:4px;">Intégration Notion</div>
-          <div>• Envoi direct via API Notion — crée une page dans la base configurée</div>
-          <div>• Proxy Cloudflare Worker pour contourner les restrictions CORS</div>
-          <div>• Token, Database ID et URL proxy stockés en localStorage (jamais dans le code)</div>
-          <div>• Sync automatique des propriétés : création des champs manquants, détection des conflits de type</div>
-          <div>• Contrôle doublon sur ISBN avant envoi — demande confirmation si le livre existe déjà</div>
-          <div>• Couverture envoyée comme image de couverture de la page Notion</div>
-          <div>• Propriété titre mappée sur "Nom" (nom par défaut Notion FR)</div>
-
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:4px;">Interface</div>
-          <div>• Mode clair / sombre automatique (selon préférences système)</div>
-          <div>• Panneau de configuration Notion accessible via lien discret en bas de page</div>
-          <div>• Changelog (ce panneau)</div>
-          <div>• Fichier HTML autonome, zéro dépendance externe, déployé sur GitHub Pages</div>
-
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:4px;">Scanner ISBN (en attente)</div>
-          <div>• Scan caméra suspendu — BarcodeDetector non disponible sur iOS 26 beta et Brave iOS</div>
-          <div>• Sera réactivé dès stabilisation de l'API sur iOS</div>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
+          <div style="color:var(--muted);">• Moteur préférentiel configurable (BnF par défaut)</div>
+          <div style="color:var(--muted);">• Fallback automatique sur les autres sources si rien trouvé</div>
+          <div style="color:var(--muted);">• BnF via API SRU UNIMARC — meilleure couverture livres français</div>
+          <div style="color:var(--muted);">• Affichage de la couverture et de la source utilisée</div>
+          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Données bibliographiques : titre, auteur(s), nationalité, éditeur, collection, ISBN, dates, pages</div>
+          <div style="color:var(--muted);">• Classification : 11 thèmes et sous-thèmes contextuels, vides par défaut</div>
+          <div style="color:var(--muted);">• Suivi de lecture : statut, priorité, date de lecture, note ★</div>
+          <div style="color:var(--muted);">• État physique, livre de collection, commentaire libre</div>
+          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Configuration Notion</div>
+          <div style="color:var(--muted);">• Token, Database ID et proxy stockés en localStorage (jamais dans le code)</div>
+          <div style="color:var(--muted);">• Proxy Cloudflare Worker pour contourner les restrictions CORS</div>
+          <div style="color:var(--muted);">• Accepte l'URL Notion complète pour le Database ID</div>
+          <div style="color:var(--muted);">• Vérification de la connexion au clic "Enregistrer"</div>
+          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Ajout Notion</div>
+          <div style="color:var(--muted);">• Envoi direct via API Notion</div>
+          <div style="color:var(--muted);">• Sync automatique des propriétés — création des champs manquants avant chaque envoi</div>
+          <div style="color:var(--muted);">• Détection des conflits de type avec message lisible</div>
+          <div style="color:var(--muted);">• Contrôle doublon sur ISBN — demande confirmation si le livre existe déjà</div>
+          <div style="color:var(--muted);">• Couverture envoyée comme image de la page Notion</div>
+          <div style="color:var(--muted);">• Propriété titre mappée sur "Nom" (nom par défaut Notion FR)</div>
+          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Interface</div>
+          <div style="color:var(--muted);">• Fichier HTML autonome, zéro dépendance, déployé sur GitHub Pages</div>
+          <div style="color:var(--muted);">• Mode clair / sombre automatique</div>
+          <div style="color:var(--muted);">• Panneau configuration et changelog en bas de page</div>
+          <div style="color:var(--muted);">• Scanner ISBN suspendu (BarcodeDetector indisponible sur iOS 26 beta)</div>
         </div>
       </div>
-    </div>
-        <div style="color:var(--muted);margin-top:3px;">BnF (catalogue national français) ajouté comme source principale — corrige l'échec sur les éditions françaises récentes</div>
-      </div>
+
     </div>
   </div>
 </div>
@@ -290,30 +314,56 @@ function toggleLu() {
 }
 
 // ── LOOKUP ─────────────────────────────────────────────
+function isbn13to10(isbn13) {
+  if (!isbn13.startsWith('978') || isbn13.length !== 13) return null;
+  const core = isbn13.slice(3, 12);
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += (10 - i) * parseInt(core[i]);
+  const check = (11 - (sum % 11)) % 11;
+  return core + (check === 10 ? 'X' : check);
+}
+
 async function fetchBnF(raw, b) {
-  const xml = await fetch(`https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn+adj+"${raw}"&recordSchema=unimarcxchange&maximumRecords=1`).then(r=>r.text());
-  const doc = new DOMParser().parseFromString(xml,'text/xml');
-  const rec = doc.querySelector('record');
-  if (!rec) return;
-  const gf = (tag,sub) => { const el=rec.querySelector(`datafield[tag="${tag}"] subfield[code="${sub}"]`); return el?el.textContent.trim():''; };
-  const gfa = (tag,sub) => Array.from(rec.querySelectorAll(`datafield[tag="${tag}"] subfield[code="${sub}"]`)).map(e=>e.textContent.trim());
-  b.titre = gf('200','a'); const esub=gf('200','e'); if(esub&&b.titre) b.titre+=' — '+esub;
-  const na=gfa('700','a'),nb=gfa('700','b'); b.auteur=na.map((a,i)=>nb[i]?nb[i]+' '+a:a).join(', ');
-  if(!b.auteur){const na2=gfa('701','a'),nb2=gfa('701','b');b.auteur=na2.map((a,i)=>nb2[i]?nb2[i]+' '+a:a).join(', ');}
-  b.editeur=gf('210','c')||gf('214','c'); b.dateed=gf('210','d')||gf('214','d');
-  b.collection=gf('225','a'); b.pages=gf('215','a');
-  if(b.titre) b.source='BnF';
+  // Essai ISBN-13 d'abord, puis ISBN-10 si pas trouvé
+  const isbns = [raw];
+  const isbn10 = isbn13to10(raw);
+  if (isbn10) isbns.push(isbn10);
+
+  for (const isbn of isbns) {
+    try {
+      const xml = await fetch(`https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn+adj+"${isbn}"&recordSchema=unimarcxchange&maximumRecords=1`).then(r=>r.text());
+      const doc = new DOMParser().parseFromString(xml,'text/xml');
+      const rec = doc.querySelector('record');
+      if (!rec) continue;
+      const gf = (tag,sub) => { const el=rec.querySelector(`datafield[tag="${tag}"] subfield[code="${sub}"]`); return el?el.textContent.trim():''; };
+      const gfa = (tag,sub) => Array.from(rec.querySelectorAll(`datafield[tag="${tag}"] subfield[code="${sub}"]`)).map(e=>e.textContent.trim());
+      b.titre = gf('200','a'); const esub=gf('200','e'); if(esub&&b.titre) b.titre+=' — '+esub;
+      const na=gfa('700','a'),nb=gfa('700','b'); b.auteur=na.map((a,i)=>nb[i]?nb[i]+' '+a:a).join(', ');
+      if(!b.auteur){const na2=gfa('701','a'),nb2=gfa('701','b');b.auteur=na2.map((a,i)=>nb2[i]?nb2[i]+' '+a:a).join(', ');}
+      b.editeur=gf('210','c')||gf('214','c'); b.dateed=gf('210','d')||gf('214','d');
+      b.collection=gf('225','a'); b.pages=gf('215','a');
+      if(b.titre) { b.source='BnF'; return; }
+    } catch(e) {}
+  }
 }
 
 async function fetchOpenLibrary(raw, b) {
-  const d=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${raw}&format=json&jscmd=details`).then(r=>r.json());
-  const entry=d[`ISBN:${raw}`];
-  if(!entry) return;
-  const det=entry.details;
-  b.titre=det.title||''; b.auteur=det.authors?.map(a=>a.name).join(', ')||'';
-  b.editeur=det.publishers?.[0]||''; b.dateed=det.publish_date||''; b.pages=det.number_of_pages||'';
-  if(entry.thumbnail_url) b.couverture=entry.thumbnail_url.replace('-S.','-M.');
-  if(b.titre) b.source='OpenLibrary';
+  const isbns = [raw];
+  const isbn10 = isbn13to10(raw);
+  if (isbn10) isbns.push(isbn10);
+
+  for (const isbn of isbns) {
+    try {
+      const d=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=details`).then(r=>r.json());
+      const entry=d[`ISBN:${isbn}`];
+      if(!entry) continue;
+      const det=entry.details;
+      b.titre=det.title||''; b.auteur=det.authors?.map(a=>a.name).join(', ')||'';
+      b.editeur=det.publishers?.[0]||''; b.dateed=det.publish_date||''; b.pages=det.number_of_pages||'';
+      if(entry.thumbnail_url) b.couverture=entry.thumbnail_url.replace('-S.','-M.');
+      if(b.titre) { b.source='OpenLibrary'; return; }
+    } catch(e) {}
+  }
 }
 
 async function fetchGoogle(raw, b) {
@@ -335,14 +385,12 @@ async function lookup() {
   const engine = document.getElementById('search-engine').value;
   let b = { isbn:raw, titre:'', auteur:'', editeur:'', collection:'', dateed:'', pages:'', couverture:'', source:'' };
 
-  // Ordre de priorité selon le moteur choisi
-  const order = {
-    bnf:         [fetchBnF, fetchOpenLibrary, fetchGoogle],
-    openlibrary: [fetchOpenLibrary, fetchBnF, fetchGoogle],
-    google:      [fetchGoogle, fetchBnF, fetchOpenLibrary],
-    all:         [fetchBnF, fetchOpenLibrary, fetchGoogle],
-  };
-  const fetchers = order[engine] || order.all;
+  // Moteur préféré en premier, fallback automatique sur les autres
+  const all = [fetchBnF, fetchOpenLibrary, fetchGoogle];
+  const preferred = { bnf: fetchBnF, openlibrary: fetchOpenLibrary, google: fetchGoogle };
+  const first = preferred[engine] || fetchBnF;
+  const rest = all.filter(f => f !== first);
+  const fetchers = [first, ...rest];
 
   try {
     for (const fetcher of fetchers) {
@@ -625,6 +673,7 @@ async function doSend(cfg, sync) {
   const get = id => document.getElementById(id)?.value?.trim() || '';
   const cb  = id => document.getElementById(id)?.checked || false;
   const notionStatus = document.getElementById('notion-status');
+  let syncMsg = '';
   if (sync.created.length > 0) syncMsg += ' Propriétés créées : ' + sync.created.join(', ') + '.';
   if (sync.conflicts.length > 0) syncMsg += ' ⚠️ Conflits ignorés : ' + sync.conflicts.map(c => c.name).join(', ') + '.';
 
@@ -693,7 +742,19 @@ function toggleDevlog() {
   d.style.display = d.style.display === 'none' ? 'block' : 'none';
 }
 
+// ── DÉMARRAGE ──────────────────────────────────────────
 initThemes();
+
+// Détection du paramètre ?isbn= dans l'URL (depuis Raccourcis iOS)
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const isbn = params.get('isbn');
+  if (isbn) {
+    document.getElementById('isbn-input').value = isbn.replace(/[^0-9Xx]/g, '');
+    // Petit délai pour laisser le DOM se stabiliser
+    setTimeout(() => lookup(), 300);
+  }
+})();
 </script>
 </body>
 </html>
