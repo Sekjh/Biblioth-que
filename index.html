@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.39 — 25052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.40 — 25052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -162,6 +162,9 @@
           <button class="outline" onclick="generateFiche()" id="btn-generate-fiche" style="height:34px;font-size:12px;margin-top:6px;">
             ✦ Générer via IA
           </button>
+          <button class="outline" onclick="document.getElementById('f-fiche').value=''" style="height:34px;font-size:12px;margin-top:4px;color:var(--muted);">
+            Effacer
+          </button>
           <p id="fiche-ai-status" class="status" style="font-size:11px;"></p>
         </div>
       </div>
@@ -240,6 +243,15 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
     <div style="font-size:12px;line-height:1.8;">
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.40</span>
+        <span style="color:var(--muted);margin-left:6px;">25052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Bouton "Effacer" sous "Générer via IA" pour vider la fiche de lecture</div>
+        </div>
+      </div>
 
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.39</span>
