@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.41 — 26052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.42 — 26052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -245,11 +245,31 @@
     <div style="font-size:12px;line-height:1.8;">
 
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.42</span>
+        <span style="color:var(--muted);margin-left:6px;">26052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Fiche IA : la réponse commence toujours par "#Générée automatiquement par IA"</div>
+          <div style="color:var(--muted);">• Fiche IA : si thème = Littérature, le prompt génère un bref résumé de l'histoire plutôt qu'une analyse des idées</div>
+        </div>
+      </div>
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.41</span>
         <span style="color:var(--muted);margin-left:6px;">26052026</span>
         <div style="margin-top:6px;">
           <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
           <div style="color:var(--muted);">• Nouveau statut "Néant" pour les livres détenus mais jamais destinés à être lus</div>
+        </div>
+      </div>
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.42</span>
+        <span style="color:var(--muted);margin-left:6px;">26052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Fiche IA : la réponse commence toujours par "#Générée automatiquement par IA"</div>
+          <div style="color:var(--muted);">• Fiche IA : si thème = Littérature, le prompt génère un bref résumé de l'histoire plutôt qu'une analyse des idées</div>
         </div>
       </div>
 
@@ -1154,7 +1174,12 @@ async function generateFiche() {
   btn.disabled = true;
   status.textContent = '✦ Génération en cours…';
 
-  const prompt = `En 2-3 phrases, décris uniquement les idées, thèmes et pensées centrales du livre "${titre}" de ${auteur || 'auteur inconnu'}${datepub ? ' ('+datepub+')' : ''}. Pas de contexte, pas de style, pas de public cible. Juste l'essentiel de ce que le livre dit ou explore. En français, sans titre ni introduction.`;
+  const theme = document.getElementById('f-theme').value.trim();
+  const isLitterature = theme === 'Littérature';
+
+  const prompt = isLitterature
+    ? `En 2-3 phrases, fais un bref résumé de l'histoire du livre "${titre}" de ${auteur || 'auteur inconnu'}${datepub ? ' ('+datepub+')' : ''}. Sans contexte, sans style, sans jugement. Juste l'essentiel de ce qui se passe. En français. Commence ta réponse par la ligne "#Générée automatiquement par IA" puis une ligne vide, puis le résumé.`
+    : `En 2-3 phrases, décris uniquement les idées, thèmes et pensées centrales du livre "${titre}" de ${auteur || 'auteur inconnu'}${datepub ? ' ('+datepub+')' : ''}. Pas de contexte, pas de style, pas de public cible. Juste l'essentiel de ce que le livre dit ou explore. En français. Commence ta réponse par la ligne "#Générée automatiquement par IA" puis une ligne vide, puis le contenu.`;
 
   try {
     const fiche = await callClaude(prompt);
