@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.44 — 26052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.45 — 26052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -692,8 +692,22 @@ async function lookup() {
       if (dup.isDuplicate) {
         alertEl.textContent = `⚠️ Déjà dans ta base Notion : "${dup.title}"`;
         alertEl.style.display = 'block';
+      } else {
+        alertEl.textContent = '✓ Pas de doublon trouvé';
+        alertEl.style.display = 'block';
+        alertEl.style.color = 'var(--muted)';
+        setTimeout(() => { alertEl.style.display = 'none'; }, 3000);
       }
-    }).catch(() => {});
+    }).catch(e => {
+      alertEl.textContent = '⚠️ Doublon non vérifié : ' + e.message;
+      alertEl.style.display = 'block';
+      alertEl.style.color = 'var(--muted)';
+    });
+  } else {
+    alertEl.textContent = '⚠️ Config Notion manquante — doublon non vérifié';
+    alertEl.style.display = 'block';
+    alertEl.style.color = 'var(--muted)';
+    setTimeout(() => { alertEl.style.display = 'none'; }, 3000);
   }
 }
 
