@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.40 — 25052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.41 — 26052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -117,7 +117,7 @@
         <div class="field">
           <label>Statut</label>
           <select id="f-statut" onchange="toggleLu()">
-            <option>À lire</option><option>En cours</option><option>Lu</option><option>Collection</option>
+            <option>À lire</option><option>En cours</option><option>Lu</option><option>Étude</option><option>Collection</option><option>Néant</option>
           </select>
         </div>
         <div class="field" id="priorite-block">
@@ -243,6 +243,25 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
     <div style="font-size:12px;line-height:1.8;">
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.41</span>
+        <span style="color:var(--muted);margin-left:6px;">26052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Nouveau statut "Néant" pour les livres détenus mais jamais destinés à être lus</div>
+        </div>
+      </div>
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.41</span>
+        <span style="color:var(--muted);margin-left:6px;">26052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Nouveau statut "Étude" (date de lecture + note visibles, comme Lu)</div>
+          <div style="color:var(--muted);">• Nouveau statut "Néant" pour les livres jamais destinés à la lecture (pas de priorité ni date)</div>
+        </div>
+      </div>
 
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.40</span>
@@ -485,11 +504,11 @@ function updateSousTheme() {
 }
 function toggleLu() {
   const statut = document.getElementById('f-statut').value;
-  const lu = statut === 'Lu';
-  const aLire = statut === 'À lire' || statut === 'Collection';
+  const lu = statut === 'Lu' || statut === 'Étude';
+  const avecPriorite = statut === 'À lire' || statut === 'En cours';
   document.getElementById('datelu-block').classList.toggle('hidden', !lu);
   document.getElementById('note-block').classList.toggle('hidden', !lu);
-  document.getElementById('priorite-block').classList.toggle('hidden', !aLire);
+  document.getElementById('priorite-block').classList.toggle('hidden', !avecPriorite);
 }
 
 // ── LOOKUP ─────────────────────────────────────────────
