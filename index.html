@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.43 — 26052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.44 — 26052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -79,6 +79,7 @@
         <div style="flex:1">
           <p style="font-size:13px;font-weight:500;line-height:1.4;" id="found-title"></p>
           <span class="source-badge" id="source-badge"></span>
+          <p id="duplicate-alert" style="font-size:12px;color:#c0392b;margin-top:6px;display:none;"></p>
           <p style="font-size:12px;color:var(--muted);margin-top:6px;">Modifie les champs si nécessaire.</p>
         </div>
       </div>
@@ -245,6 +246,15 @@
     <div style="font-size:12px;line-height:1.8;">
 
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.44</span>
+        <span style="color:var(--muted);margin-left:6px;">26052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
+          <div style="color:var(--muted);">• Correction alerte doublon au lookup — affichée dans un élément dédié sous le titre du livre (plus fiable que setStatus)</div>
+        </div>
+      </div>
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.43</span>
         <span style="color:var(--muted);margin-left:6px;">26052026</span>
         <div style="margin-top:6px;">
@@ -269,6 +279,15 @@
         <div style="margin-top:6px;">
           <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
           <div style="color:var(--muted);">• Nouveau statut "Néant" pour les livres détenus mais jamais destinés à être lus</div>
+        </div>
+      </div>
+
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.44</span>
+        <span style="color:var(--muted);margin-left:6px;">26052026</span>
+        <div style="margin-top:6px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
+          <div style="color:var(--muted);">• Correction alerte doublon au lookup — affichée dans un élément dédié sous le titre du livre (plus fiable que setStatus)</div>
         </div>
       </div>
 
@@ -665,10 +684,14 @@ async function lookup() {
 
   // Contrôle doublon discret (en parallèle, sans bloquer)
   const cfg = getConfig();
+  const alertEl = document.getElementById('duplicate-alert');
+  alertEl.style.display = 'none';
+  alertEl.textContent = '';
   if (cfg.token && cfg.dbId && raw) {
     checkDuplicate(raw, cfg).then(dup => {
       if (dup.isDuplicate) {
-        setStatus(`⚠️ Ce livre est déjà dans ta base Notion ("${dup.title}").`);
+        alertEl.textContent = `⚠️ Déjà dans ta base Notion : "${dup.title}"`;
+        alertEl.style.display = 'block';
       }
     }).catch(() => {});
   }
@@ -717,6 +740,8 @@ function fillForm(b) {
   document.getElementById('f-fiche').value='';
   document.getElementById('found-title').textContent=b.titre||(b.isbn?'ISBN : '+b.isbn:'');
   document.getElementById('source-badge').textContent=b.source?`Source : ${b.source}`:'Saisie manuelle';
+  const dupAlert = document.getElementById('duplicate-alert');
+  if (dupAlert) { dupAlert.style.display='none'; dupAlert.textContent=''; }
   const img=document.getElementById('cover-img');
   if(b.couverture){img.src=b.couverture;img.style.display='block';}else{img.style.display='none';}
 
