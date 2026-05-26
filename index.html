@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.45 — 26052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.46 — 26052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -682,31 +682,30 @@ async function lookup() {
 
   fillForm(b);
 
-  // Contrôle doublon discret (en parallèle, sans bloquer)
+  // Contrôle doublon discret — après fillForm pour ne pas être écrasé
   const cfg = getConfig();
   const alertEl = document.getElementById('duplicate-alert');
-  alertEl.style.display = 'none';
-  alertEl.textContent = '';
   if (cfg.token && cfg.dbId && raw) {
     checkDuplicate(raw, cfg).then(dup => {
       if (dup.isDuplicate) {
         alertEl.textContent = `⚠️ Déjà dans ta base Notion : "${dup.title}"`;
+        alertEl.style.color = '#c0392b';
         alertEl.style.display = 'block';
       } else {
-        alertEl.textContent = '✓ Pas de doublon trouvé';
-        alertEl.style.display = 'block';
+        alertEl.textContent = '✓ Pas de doublon';
         alertEl.style.color = 'var(--muted)';
+        alertEl.style.display = 'block';
         setTimeout(() => { alertEl.style.display = 'none'; }, 3000);
       }
     }).catch(e => {
-      alertEl.textContent = '⚠️ Doublon non vérifié : ' + e.message;
-      alertEl.style.display = 'block';
+      alertEl.textContent = '⚠️ Vérification doublon échouée : ' + e.message;
       alertEl.style.color = 'var(--muted)';
+      alertEl.style.display = 'block';
     });
   } else {
     alertEl.textContent = '⚠️ Config Notion manquante — doublon non vérifié';
-    alertEl.style.display = 'block';
     alertEl.style.color = 'var(--muted)';
+    alertEl.style.display = 'block';
     setTimeout(() => { alertEl.style.display = 'none'; }, 3000);
   }
 }
@@ -754,8 +753,6 @@ function fillForm(b) {
   document.getElementById('f-fiche').value='';
   document.getElementById('found-title').textContent=b.titre||(b.isbn?'ISBN : '+b.isbn:'');
   document.getElementById('source-badge').textContent=b.source?`Source : ${b.source}`:'Saisie manuelle';
-  const dupAlert = document.getElementById('duplicate-alert');
-  if (dupAlert) { dupAlert.style.display='none'; dupAlert.textContent=''; }
   const img=document.getElementById('cover-img');
   if(b.couverture){img.src=b.couverture;img.style.display='block';}else{img.style.display='none';}
 
