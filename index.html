@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.47 — 26052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.48 — 31052026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -242,286 +242,57 @@
       <span style="font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;">Changelog</span>
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
-    <div style="font-size:12px;line-height:1.8;">
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.44</span>
-        <span style="color:var(--muted);margin-left:6px;">26052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Correction alerte doublon au lookup — affichée dans un élément dédié sous le titre du livre (plus fiable que setStatus)</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.43</span>
-        <span style="color:var(--muted);margin-left:6px;">26052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Contrôle doublon au moment du lookup — alerte discrète si l'ISBN existe déjà dans Notion (en parallèle, sans bloquer l'affichage du formulaire)</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.42</span>
-        <span style="color:var(--muted);margin-left:6px;">26052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Fiche IA : la réponse commence toujours par "#Générée automatiquement par IA"</div>
-          <div style="color:var(--muted);">• Fiche IA : si thème = Littérature, le prompt génère un bref résumé de l'histoire plutôt qu'une analyse des idées</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.41</span>
-        <span style="color:var(--muted);margin-left:6px;">26052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Nouveau statut "Néant" pour les livres détenus mais jamais destinés à être lus</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.44</span>
-        <span style="color:var(--muted);margin-left:6px;">26052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Correction alerte doublon au lookup — affichée dans un élément dédié sous le titre du livre (plus fiable que setStatus)</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.43</span>
-        <span style="color:var(--muted);margin-left:6px;">26052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Contrôle doublon au moment du lookup — alerte discrète si l'ISBN existe déjà dans Notion (en parallèle, sans bloquer l'affichage du formulaire)</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.42</span>
-        <span style="color:var(--muted);margin-left:6px;">26052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Fiche IA : la réponse commence toujours par "#Générée automatiquement par IA"</div>
-          <div style="color:var(--muted);">• Fiche IA : si thème = Littérature, le prompt génère un bref résumé de l'histoire plutôt qu'une analyse des idées</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.41</span>
-        <span style="color:var(--muted);margin-left:6px;">26052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Nouveau statut "Étude" (date de lecture + note visibles, comme Lu)</div>
-          <div style="color:var(--muted);">• Nouveau statut "Néant" pour les livres jamais destinés à la lecture (pas de priorité ni date)</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.40</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Bouton "Effacer" sous "Générer via IA" pour vider la fiche de lecture</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.39</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Nouveau statut "Collection" pour les livres détenus mais non destinés à la lecture</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.38</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Fiche de lecture visible pour tous les statuts (À lire, En cours, Lu)</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.37</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Détection automatique "Livre de collection" — pré-coche la case si Pléiade, Bouquins, Quarto, Classiques Garnier, édition ancienne (&lt;1900) détectés</div>
-          <div style="color:var(--muted);">• Message discret indique la raison de la détection — modifiable manuellement</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.36</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Correction : déclaration async function lookup() manquante — causait une SyntaxError au chargement</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.35</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Open Library Covers API ajoutée comme source de couverture de secours — améliore la couverture des livres anciens</div>
-          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Ajout Notion</div>
-          <div style="color:var(--muted);">• En cas de doublon : nouveau bouton "Mettre à jour la fiche" pour ajouter la flashcard sur un livre existant sans dupliquer l'entrée</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.34</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Prompt flashcard recentré sur les idées et thèmes du livre uniquement — suppression du contexte, du style et du public cible</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.33</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Fiche de lecture remplacée par une flashcard courte (3-4 phrases) — sujet, intérêt, public cible</div>
-          <div style="color:var(--muted);">• Prompt raccourci, max_tokens réduit à 256 (coût divisé par 4)</div>
-          <div style="color:var(--muted);">• Textarea réduit à 3 lignes</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.32</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Correction : fonction setStatus manquante — bloquait toute recherche ISBN</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.31</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Bouton "Suggérer via IA" sur le bloc thème/sous-thème — suggestion automatique depuis titre et auteur</div>
-          <div style="color:var(--muted);">• Bouton "Générer via IA" sur la fiche de lecture — génération d'une fiche 200-300 mots depuis titre/auteur/éditeur/date</div>
-          <div style="color:var(--muted);">• Utilise Claude Haiku via API Anthropic (coût minimal)</div>
-          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Configuration Notion</div>
-          <div style="color:var(--muted);">• Champ clé API Anthropic ajouté dans le panneau de configuration (stockée en localStorage)</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.30</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Ajout d'un champ "Fiche de lecture" (textarea) visible uniquement quand le statut est "Lu"</div>
-          <div style="color:var(--muted);">• Envoyée dans Notion comme propriété rich_text</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.29</span>
-        <span style="color:var(--muted);margin-left:6px;">25052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Correction syntaxe JS — calcul de la date de lecture déplacé en fonction inline dans le payload</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.28</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Date de lecture remplacée par deux selects : mois (liste fixe) et année (année courante → 1980)</div>
-          <div style="color:var(--muted);">• Envoyée dans Notion au format "Janvier 2024"</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.27</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Détection du paramètre ?isbn= dans l'URL au chargement — lookup automatique</div>
-          <div style="color:var(--muted);">• Compatible avec l'app Raccourcis iOS : scanner → ouvrir la page → formulaire pré-rempli</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.26</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Suppression de l'option "Tous les moteurs" — le moteur choisi est le premier essayé, fallback automatique sur les autres</div>
-          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Interface</div>
-          <div style="color:var(--muted);">• Changelog restructuré par catégories de fonctionnalités</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.25</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• BnF et OpenLibrary essaient automatiquement l'ISBN-10 équivalent si l'ISBN-13 n'est pas trouvé</div>
-          <div style="color:var(--muted);">• Améliore la couverture des livres anciens (ex. éditions Gallimard années 1950)</div>
-          <div style="color:var(--muted);">• Conversion ISBN-13 → ISBN-10 calculée localement</div>
-        </div>
-      </div>
-
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.24</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="margin-top:6px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Ajout Notion</div>
-          <div style="color:var(--muted);">• Correction variable syncMsg non déclarée dans doSend</div>
-        </div>
-      </div>
-
+        <div style="font-size:12px;line-height:1.8;">
       <div style="padding:0.75rem 1rem;">
-        <span style="font-weight:600;color:var(--text);">v0.23</span>
-        <span style="color:var(--muted);margin-left:6px;">24052026</span>
-        <div style="margin-top:6px;">
+        <span style="font-weight:600;color:var(--text);">v0.48</span>
+        <span style="color:var(--muted);margin-left:6px;">31052026</span>
+        <div style="margin-top:8px;">
+
           <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Moteur préférentiel configurable (BnF par défaut)</div>
-          <div style="color:var(--muted);">• Fallback automatique sur les autres sources si rien trouvé</div>
+          <div style="color:var(--muted);">• Saisie manuelle ISBN-13 ou ISBN-10</div>
+          <div style="color:var(--muted);">• Moteur préférentiel configurable (BnF par défaut) — fallback automatique sur OpenLibrary puis Google Books</div>
           <div style="color:var(--muted);">• BnF via API SRU UNIMARC — meilleure couverture livres français</div>
-          <div style="color:var(--muted);">• Affichage de la couverture et de la source utilisée</div>
-          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Données bibliographiques : titre, auteur(s), nationalité, éditeur, collection, ISBN, dates, pages</div>
-          <div style="color:var(--muted);">• Classification : 11 thèmes et sous-thèmes contextuels, vides par défaut</div>
-          <div style="color:var(--muted);">• Suivi de lecture : statut, priorité, date de lecture, note ★</div>
-          <div style="color:var(--muted);">• État physique, livre de collection, commentaire libre</div>
-          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Configuration Notion</div>
-          <div style="color:var(--muted);">• Token, Database ID et proxy stockés en localStorage (jamais dans le code)</div>
+          <div style="color:var(--muted);">• Conversion ISBN-13 → ISBN-10 automatique pour les livres anciens</div>
+          <div style="color:var(--muted);">• Couverture récupérée depuis OpenLibrary Covers en fallback</div>
+          <div style="color:var(--muted);">• Détection du paramètre ?isbn= dans l'URL — lookup automatique (compatible Raccourcis iOS)</div>
+
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Champs du livre</div>
+          <div style="color:var(--muted);">• Données bibliographiques : titre, auteur(s), nationalité, éditeur, collection, ISBN, date de publication originale, date de l'édition, pages</div>
+          <div style="color:var(--muted);">• Classification : 11 thèmes et sous-thèmes contextuels, cases vides par défaut</div>
+          <div style="color:var(--muted);">• Bouton "Suggérer via IA" pour le thème/sous-thème (Claude Haiku)</div>
+          <div style="color:var(--muted);">• Statuts : À lire, En cours, Lu, Étude, Collection, Néant</div>
+          <div style="color:var(--muted);">• Priorité de lecture (À lire / En cours)</div>
+          <div style="color:var(--muted);">• Date de lecture : deux selects mois / année</div>
+          <div style="color:var(--muted);">• Note ★ (Lu / Étude)</div>
+          <div style="color:var(--muted);">• Fiche de lecture (tous statuts) — bouton "Générer via IA" (Claude Haiku) + bouton "Effacer"</div>
+          <div style="color:var(--muted);">• Prompt fiche adapté selon le thème : résumé de l'histoire (Littérature) ou idées centrales (autres)</div>
+          <div style="color:var(--muted);">• Fiche générée préfixée par #Générée automatiquement par IA</div>
+          <div style="color:var(--muted);">• État physique : Neuf / Très bon / Bon / Correct / Abîmé</div>
+          <div style="color:var(--muted);">• Livre de collection (checkbox) — détection automatique : Pléiade, Bouquins, Quarto, Classiques Garnier, édition ancienne…</div>
+          <div style="color:var(--muted);">• Commentaire libre</div>
+
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Configuration Notion</div>
+          <div style="color:var(--muted);">• Token, Database ID, proxy Cloudflare et clé API Anthropic stockés en localStorage (jamais dans le code)</div>
           <div style="color:var(--muted);">• Proxy Cloudflare Worker pour contourner les restrictions CORS</div>
           <div style="color:var(--muted);">• Accepte l'URL Notion complète pour le Database ID</div>
-          <div style="color:var(--muted);">• Vérification de la connexion au clic "Enregistrer"</div>
-          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Ajout Notion</div>
-          <div style="color:var(--muted);">• Envoi direct via API Notion</div>
-          <div style="color:var(--muted);">• Sync automatique des propriétés — création des champs manquants avant chaque envoi</div>
-          <div style="color:var(--muted);">• Détection des conflits de type avec message lisible</div>
-          <div style="color:var(--muted);">• Contrôle doublon sur ISBN — demande confirmation si le livre existe déjà</div>
-          <div style="color:var(--muted);">• Couverture envoyée comme image de la page Notion</div>
-          <div style="color:var(--muted);">• Propriété titre mappée sur "Nom" (nom par défaut Notion FR)</div>
-          <div style="font-weight:500;color:var(--text);margin-top:6px;margin-bottom:3px;">Interface</div>
-          <div style="color:var(--muted);">• Fichier HTML autonome, zéro dépendance, déployé sur GitHub Pages</div>
-          <div style="color:var(--muted);">• Mode clair / sombre automatique</div>
-          <div style="color:var(--muted);">• Panneau configuration et changelog en bas de page</div>
-          <div style="color:var(--muted);">• Scanner ISBN suspendu (BarcodeDetector indisponible sur iOS 26 beta)</div>
+          <div style="color:var(--muted);">• Vérification de la connexion et sync des propriétés au clic "Enregistrer"</div>
+
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Ajout Notion</div>
+          <div style="color:var(--muted);">• Envoi direct via API Notion — création d'une page dans la base configurée</div>
+          <div style="color:var(--muted);">• Sync automatique des propriétés avant chaque envoi — création des champs manquants, détection des conflits de type</div>
+          <div style="color:var(--muted);">• Couverture envoyée comme image de couverture de la page Notion</div>
+          <div style="color:var(--muted);">• Contrôle doublon sur ISBN — trois options : Ajouter quand même / Mettre à jour statut &amp; lecture / Annuler</div>
+          <div style="color:var(--muted);">• "Mettre à jour statut &amp; lecture" : met à jour statut, priorité, date de lecture, note et fiche sur la page existante</div>
+
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Interface</div>
+          <div style="color:var(--muted);">• Fichier HTML autonome, zéro dépendance externe, déployé sur GitHub Pages</div>
+          <div style="color:var(--muted);">• Mode clair / sombre automatique (préférences système)</div>
+          <div style="color:var(--muted);">• Panneau de configuration et changelog accessibles en bas de page</div>
+          <div style="color:var(--muted);">• Scanner ISBN suspendu — BarcodeDetector indisponible sur iOS 26 beta</div>
+
         </div>
       </div>
-
+    </div>
     </div>
   </div>
 </div>
@@ -1003,7 +774,7 @@ async function sendToNotion() {
       notionStatus.innerHTML = `⚠️ <strong>${dup.title}</strong> existe déjà dans ta base (ISBN : ${isbn}).<br>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
           <button onclick="confirmSend()" style="height:34px;font-size:13px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Ajouter quand même</button>
-          <button onclick="updateFiche('${dup.pageId}')" style="height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Mettre à jour la fiche</button>
+          <button onclick="updateStatutLecture('${dup.pageId}')" style="height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Mettre à jour statut & lecture</button>
           <button onclick="document.getElementById('notion-status').textContent=''" style="height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;">Annuler</button>
         </div>`;
       notionStatus.style.whiteSpace = 'normal';
@@ -1023,30 +794,34 @@ async function confirmSend() {
   await doSend(cfg, sync);
 }
 
-async function updateFiche(pageId) {
+async function updateStatutLecture(pageId) {
   const cfg = getConfig();
   const notionStatus = document.getElementById('notion-status');
-  const fiche = document.getElementById('f-fiche')?.value?.trim() || '';
+  const get = id => document.getElementById(id)?.value?.trim() || '';
+  const cb  = id => document.getElementById(id)?.checked || false;
 
-  if (!fiche) {
-    notionStatus.textContent = '⚠️ La fiche de lecture est vide — génère-la ou saisis-la avant de mettre à jour.';
-    return;
-  }
+  notionStatus.textContent = '🔄 Mise à jour en cours…';
 
-  notionStatus.textContent = '🔄 Mise à jour de la fiche…';
+  const mois = get('f-datelu-mois');
+  const annee = get('f-datelu-annee');
+  const dateLue = mois && annee ? mois + ' ' + annee : (mois || annee || '');
+
+  const props = {
+    'Statut':          { select: { name: get('f-statut') || 'À lire' } },
+    'Date de lecture': { rich_text: [{ text: { content: dateLue } }] },
+    'Fiche de lecture':{ rich_text: [{ text: { content: get('f-fiche') } }] },
+  };
+  if (get('f-priorite')) props['Priorité'] = { select: { name: get('f-priorite') } };
+  if (get('f-note'))     props['Note']     = { select: { name: get('f-note') } };
 
   try {
     const res = await fetch(notionUrl(`/v1/pages/${pageId}`, cfg), {
       method: 'PATCH',
       headers: notionHeaders(cfg.token),
-      body: JSON.stringify({
-        properties: {
-          'Fiche de lecture': { rich_text: [{ text: { content: fiche } }] }
-        }
-      })
+      body: JSON.stringify({ properties: props })
     });
     if (res.ok) {
-      notionStatus.textContent = '✅ Fiche de lecture mise à jour dans Notion !';
+      notionStatus.textContent = '✅ Statut & lecture mis à jour dans Notion !';
       notionStatus.style.whiteSpace = 'normal';
       setTimeout(() => { notionStatus.textContent = ''; notionStatus.style.whiteSpace = ''; }, 4000);
     } else {
