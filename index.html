@@ -45,13 +45,14 @@
   .hidden { display: none; }
   #form-section { display: none; }
   .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .prefilled { background: color-mix(in srgb, var(--bg2) 70%, var(--text) 5%); border-color: color-mix(in srgb, var(--border) 60%, var(--text) 20%); }
 
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.49 — 13062026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.50 — 13062026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -72,7 +73,7 @@
     <p id="status" class="status"></p>
   </div>
 
-  <div id="form-section">
+  <div id="form-section" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();sendToNotion();}">
     <div class="card">
       <div class="cover-row">
         <img id="cover-img" class="cover-img" src="" alt="Couverture" style="display:none">
@@ -252,6 +253,19 @@
     </div>
         <div style="font-size:12px;line-height:1.8;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.50</span>
+        <span style="color:var(--muted);margin-left:6px;">13062026</span>
+        <div style="margin-top:8px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Qualité & robustesse</div>
+          <div style="color:var(--muted);">• Validation ISBN par checksum (algorithme de Luhn) — erreur affichée avant toute recherche si le numéro est invalide</div>
+          <div style="color:var(--muted);">• Timeout 5s par source (BnF, OpenLibrary, Google Books) via AbortController — plus de blocage en cas d'API silencieuse</div>
+          <div style="color:var(--muted);">• max_tokens IA 256 → 400 — évite les fiches tronquées</div>
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">UX</div>
+          <div style="color:var(--muted);">• Champs pré-remplis par l'API mis en évidence visuellement (fond légèrement contrasté)</div>
+          <div style="color:var(--muted);">• Raccourci Cmd+Entrée (ou Ctrl+Entrée) pour envoyer dans Notion depuis n'importe quel champ du formulaire</div>
+        </div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.49</span>
         <span style="color:var(--muted);margin-left:6px;">13062026</span>
         <div style="margin-top:8px;">
@@ -362,6 +376,21 @@ function toggleLu() {
 }
 
 // ── LOOKUP ─────────────────────────────────────────────
+function validateIsbn(isbn) {
+  if (isbn.length === 13) {
+    let sum = 0;
+    for (let i = 0; i < 12; i++) sum += parseInt(isbn[i]) * (i % 2 === 0 ? 1 : 3);
+    return (10 - (sum % 10)) % 10 === parseInt(isbn[12]);
+  }
+  if (isbn.length === 10) {
+    let sum = 0;
+    for (let i = 0; i < 9; i++) sum += parseInt(isbn[i]) * (10 - i);
+    const check = isbn[9].toUpperCase() === 'X' ? 10 : parseInt(isbn[9]);
+    return (sum + check) % 11 === 0;
+  }
+  return false;
+}
+
 function isbn13to10(isbn13) {
   if (!isbn13.startsWith('978') || isbn13.length !== 13) return null;
   const core = isbn13.slice(3, 12);
@@ -369,6 +398,12 @@ function isbn13to10(isbn13) {
   for (let i = 0; i < 9; i++) sum += (10 - i) * parseInt(core[i]);
   const check = (11 - (sum % 11)) % 11;
   return core + (check === 10 ? 'X' : check);
+}
+
+function fetchWithTimeout(url, options = {}, ms = 5000) {
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(tid));
 }
 
 async function fetchBnF(raw, b) {
@@ -379,7 +414,7 @@ async function fetchBnF(raw, b) {
 
   for (const isbn of isbns) {
     try {
-      const xml = await fetch(`https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn+adj+"${isbn}"&recordSchema=unimarcxchange&maximumRecords=1`).then(r=>r.text());
+      const xml = await fetchWithTimeout(`https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn+adj+"${isbn}"&recordSchema=unimarcxchange&maximumRecords=1`).then(r=>r.text());
       const doc = new DOMParser().parseFromString(xml,'text/xml');
       const rec = doc.querySelector('record');
       if (!rec) continue;
@@ -402,7 +437,7 @@ async function fetchOpenLibrary(raw, b) {
 
   for (const isbn of isbns) {
     try {
-      const d=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=details`).then(r=>r.json());
+      const d=await fetchWithTimeout(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=details`).then(r=>r.json());
       const entry=d[`ISBN:${isbn}`];
       if(!entry) continue;
       const det=entry.details;
@@ -415,7 +450,7 @@ async function fetchOpenLibrary(raw, b) {
 }
 
 async function fetchGoogle(raw, b) {
-  const g=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${raw}`).then(r=>r.json());
+  const g=await fetchWithTimeout(`https://www.googleapis.com/books/v1/volumes?q=isbn:${raw}`).then(r=>r.json());
   if(!g.items?.length) return;
   const v=g.items[0].volumeInfo;
   b.titre=v.title||''; b.auteur=v.authors?.join(', ')||''; b.editeur=v.publisher||'';
@@ -445,6 +480,10 @@ async function fetchCover(raw) {
 async function lookup() {
   const raw = document.getElementById('isbn-input').value.trim().replace(/[-\s]/g,'');
   if (!raw) return;
+  if (!validateIsbn(raw)) {
+    setStatus('⚠️ ISBN invalide — vérifie le numéro (chiffre de contrôle incorrect).');
+    return;
+  }
   setStatus('Recherche en cours…');
   document.getElementById('form-section').style.display = 'none';
 
@@ -504,16 +543,24 @@ async function checkDuplicate(isbn, cfg) {
   }
 }
 
+function setField(id, val) {
+  const el = document.getElementById(id);
+  el.value = val || '';
+  el.classList.toggle('prefilled', !!(val && val.toString().trim()));
+}
+
 function fillForm(b) {
-  document.getElementById('f-titre').value=b.titre||'';
-  document.getElementById('f-auteur').value=b.auteur||'';
-  document.getElementById('f-nationalite').value=b.nationalite||'';
-  document.getElementById('f-editeur').value=b.editeur||'';
-  document.getElementById('f-collection-ed').value=b.collection||'';
-  document.getElementById('f-isbn').value=b.isbn||'';
-  document.getElementById('f-dateed').value=b.dateed||'';
+  setField('f-titre', b.titre);
+  setField('f-auteur', b.auteur);
+  document.getElementById('f-nationalite').value = b.nationalite || '';
+  document.getElementById('f-nationalite').classList.remove('prefilled');
+  setField('f-editeur', b.editeur);
+  setField('f-collection-ed', b.collection);
+  setField('f-isbn', b.isbn);
+  setField('f-dateed', b.dateed);
   document.getElementById('f-datepub').value='';
-  document.getElementById('f-pages').value=b.pages||'';
+  document.getElementById('f-datepub').classList.remove('prefilled');
+  setField('f-pages', b.pages);
   document.getElementById('f-datelu-mois').value='';
   document.getElementById('f-datelu-annee').value='';
   document.getElementById('f-fiche').value='';
@@ -940,7 +987,7 @@ async function callClaude(prompt) {
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 256,
+      max_tokens: 400,
       messages: [{ role: 'user', content: prompt }]
     })
   });
