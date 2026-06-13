@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.48 — 31052026</span></h1>
+  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.49 — 13062026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -171,6 +171,14 @@
     </div>
 
     <div class="card">
+      <p class="section-title">Citations</p>
+      <div class="field">
+        <label>Citations extraites du livre</label>
+        <textarea id="f-citations" rows="4" placeholder="« … » (p. XX)&#10;&#10;Une citation par bloc, format libre."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
       <p class="section-title">État physique & collection</p>
       <div class="grid2">
         <div class="field">
@@ -243,6 +251,21 @@
       <button onclick="toggleDevlog()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
     </div>
         <div style="font-size:12px;line-height:1.8;">
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.49</span>
+        <span style="color:var(--muted);margin-left:6px;">13062026</span>
+        <div style="margin-top:8px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Fiche de lecture</div>
+          <div style="color:var(--muted);">• Nouveau prompt universel — 3 points structurés (propos, enjeux, singularité), adapté à tout type d'œuvre (roman, essai, poésie, traité…)</div>
+          <div style="color:var(--muted);">• Utilise le thème et sous-thème sélectionnés pour contextualiser la génération</div>
+          <div style="color:var(--muted);">• Format bullet homogène, plus court et plus lisible</div>
+
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Citations</div>
+          <div style="color:var(--muted);">• Nouveau bloc "Citations" — saisie libre des extraits marquants</div>
+          <div style="color:var(--muted);">• Champ synchronisé dans Notion (propriété rich_text "Citations")</div>
+          <div style="color:var(--muted);">• Créé automatiquement dans la base si absent</div>
+        </div>
+      </div>
       <div style="padding:0.75rem 1rem;">
         <span style="font-weight:600;color:var(--text);">v0.48</span>
         <span style="color:var(--muted);margin-left:6px;">31052026</span>
@@ -494,6 +517,7 @@ function fillForm(b) {
   document.getElementById('f-datelu-mois').value='';
   document.getElementById('f-datelu-annee').value='';
   document.getElementById('f-fiche').value='';
+  document.getElementById('f-citations').value='';
   document.getElementById('found-title').textContent=b.titre||(b.isbn?'ISBN : '+b.isbn:'');
   document.getElementById('source-badge').textContent=b.source?`Source : ${b.source}`:'Saisie manuelle';
   const img=document.getElementById('cover-img');
@@ -608,6 +632,7 @@ const EXPECTED_PROPS = {
   'Note':                  'select',
   'État':                  'select',
   'Collection (livre)':    'checkbox',
+  'Citations':             'rich_text',
 };
 
 // Schéma Notion pour créer une propriété selon son type
@@ -863,6 +888,7 @@ async function doSend(cfg, sync) {
     'État':                 get('f-etat')  ? { select: { name: get('f-etat') } }  : undefined,
     'Collection (livre)':   { checkbox: cb('f-collection') },
     'Fiche de lecture':     { rich_text: [{ text: { content: get('f-fiche') } }] },
+    'Citations':            { rich_text: [{ text: { content: get('f-citations') } }] },
     'Commentaire':          { rich_text: [{ text: { content: get('f-comment') } }] },
   };
 
@@ -985,12 +1011,19 @@ async function generateFiche() {
   btn.disabled = true;
   status.textContent = '✦ Génération en cours…';
 
-  const theme = document.getElementById('f-theme').value.trim();
-  const isLitterature = theme === 'Littérature';
+  const theme    = document.getElementById('f-theme').value.trim();
+  const sousTheme = document.getElementById('f-soustheme').value.trim();
+  const themeCtx  = [theme, sousTheme].filter(Boolean).join(' › ');
 
-  const prompt = isLitterature
-    ? `En 2-3 phrases, fais un bref résumé de l'histoire du livre "${titre}" de ${auteur || 'auteur inconnu'}${datepub ? ' ('+datepub+')' : ''}. Sans contexte, sans style, sans jugement. Juste l'essentiel de ce qui se passe. En français. Commence ta réponse par la ligne "#Générée automatiquement par IA" puis une ligne vide, puis le résumé.`
-    : `En 2-3 phrases, décris uniquement les idées, thèmes et pensées centrales du livre "${titre}" de ${auteur || 'auteur inconnu'}${datepub ? ' ('+datepub+')' : ''}. Pas de contexte, pas de style, pas de public cible. Juste l'essentiel de ce que le livre dit ou explore. En français. Commence ta réponse par la ligne "#Générée automatiquement par IA" puis une ligne vide, puis le contenu.`;
+  const prompt = `Fiche de lecture pour "${titre}"${auteur ? ' de ' + auteur : ''}${datepub ? ' (' + datepub + ')' : ''}${themeCtx ? ' — ' + themeCtx : ''}.
+
+Réponds en exactement 3 points courts, une ligne chacun, format :
+• [propos ou intrigue centrale — une phrase]
+• [idées, enjeux ou événements clés — une phrase]
+• [ce qui rend ce livre singulier ou mémorable — une phrase]
+
+Règles : pas de titre, pas d'introduction, pas de jugement stylistique. Adapte-toi au type d'œuvre (roman, essai, poésie, traité, etc.). En français.
+Commence ta réponse par "#Générée automatiquement par IA" puis une ligne vide, puis les 3 points.`;
 
   try {
     const fiche = await callClaude(prompt);
