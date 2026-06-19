@@ -116,8 +116,8 @@ export function fillForm(b) {
   if (outputSection) outputSection.style.display = 'none';
 }
 
-export async function lookup() {
-  const raw = document.getElementById('isbn-input').value.trim().replace(/[-\s]/g, '');
+export async function lookup(isbnArg = '') {
+  const raw = isbnArg.trim().replace(/[-\s]/g, '');
   if (!raw) return;
   if (!validateIsbn(raw)) {
     setStatus('⚠️ ISBN invalide — vérifie le numéro (chiffre de contrôle incorrect).');
@@ -126,7 +126,7 @@ export async function lookup() {
   setStatus('Recherche en cours…');
   document.getElementById('form-section').style.display = 'none';
 
-  const engine = document.getElementById('search-engine').value;
+  const engine = localStorage.getItem('search_engine') || 'bnf';
   let b = { isbn: raw, titre: '', auteur: '', editeur: '', collection: '', dateed: '', pages: '', couverture: '', source: '' };
 
   const all = [fetchBnF, fetchOpenLibrary, fetchGoogle];

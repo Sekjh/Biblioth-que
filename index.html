@@ -11,21 +11,7 @@
 <div class="container">
   <h1>GEBIBLIPE <span>Gestionnaire de bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.50.1 — 2026-06-19</span></h1>
 
-  <div class="card">
-    <div class="field" style="margin-bottom:10px;">
-      <label>Moteur de recherche privilégié</label>
-      <select id="search-engine">
-        <option value="bnf">BnF — Bibliothèque nationale de France (recommandé)</option>
-        <option value="openlibrary">OpenLibrary</option>
-        <option value="google">Google Books</option>
-      </select>
-    </div>
-    <div class="input-row">
-      <input type="text" id="isbn-input" placeholder="Saisir l'ISBN…" inputmode="numeric">
-      <button id="btn-lookup">Rechercher</button>
-    </div>
-    <p id="status" class="status"></p>
-  </div>
+  <p id="status" class="status"></p>
 
   <div id="form-section">
     <div class="card">
@@ -180,6 +166,14 @@
     <div class="field">
       <label>Database ID</label>
       <input type="text" id="cfg-dbid" placeholder="URL Notion complète ou ID seul (32 caractères)" style="font-family:monospace;font-size:13px;">
+    </div>
+    <div class="field">
+      <label>Moteur de recherche ISBN</label>
+      <select id="cfg-engine">
+        <option value="bnf">BnF — Bibliothèque nationale de France (recommandé)</option>
+        <option value="openlibrary">OpenLibrary</option>
+        <option value="google">Google Books</option>
+      </select>
     </div>
     <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
       Ces informations sont stockées uniquement sur cet appareil (localStorage). Elles ne sont jamais transmises à nos serveurs.

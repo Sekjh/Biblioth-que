@@ -99,6 +99,7 @@ export async function saveConfig() {
   localStorage.setItem('notion_token', token);
   localStorage.setItem('notion_dbid', dbId);
   localStorage.setItem('notion_proxy', proxy);
+  localStorage.setItem('search_engine', document.getElementById('cfg-engine').value);
   statusEl.textContent = '🔄 Vérification de la base Notion…';
 
   const result = await syncDatabaseProps(token, dbId, { proxy: localStorage.getItem('notion_proxy') || '' });
@@ -125,6 +126,7 @@ export function toggleConfig() {
     document.getElementById('cfg-proxy').value = cfg.proxy;
     document.getElementById('cfg-token').value = cfg.token;
     document.getElementById('cfg-dbid').value = cfg.dbId;
+    document.getElementById('cfg-engine').value = localStorage.getItem('search_engine') || 'bnf';
     document.getElementById('config-status').textContent = '';
   }
 }

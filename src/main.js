@@ -12,15 +12,6 @@ for (let y = now; y >= 1980; y--) {
 
 initThemes();
 
-// ISBN input
-document.getElementById('isbn-input').addEventListener('input', function() {
-  this.value = this.value.replace(/[^0-9Xx-]/g, '');
-});
-document.getElementById('isbn-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') lookup();
-});
-document.getElementById('btn-lookup').addEventListener('click', lookup);
-
 // Cmd/Ctrl+Enter anywhere in the form sends to Notion
 document.getElementById('form-section').addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -57,6 +48,5 @@ document.getElementById('btn-save-config').addEventListener('click', saveConfig)
 const params = new URLSearchParams(window.location.search);
 const isbnParam = params.get('isbn');
 if (isbnParam) {
-  document.getElementById('isbn-input').value = isbnParam.replace(/[^0-9Xx]/g, '');
-  setTimeout(() => lookup(), 300);
+  setTimeout(() => lookup(isbnParam.replace(/[^0-9Xx]/g, '')), 300);
 }
