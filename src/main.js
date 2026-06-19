@@ -12,6 +12,17 @@ for (let y = now; y >= 1980; y--) {
 
 initThemes();
 
+// ISBN input
+document.getElementById('isbn-input').addEventListener('input', function() {
+  this.value = this.value.replace(/[^0-9Xx-]/g, '');
+});
+document.getElementById('isbn-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') lookup(document.getElementById('isbn-input').value.trim());
+});
+document.getElementById('btn-lookup').addEventListener('click', () =>
+  lookup(document.getElementById('isbn-input').value.trim())
+);
+
 // Cmd/Ctrl+Enter anywhere in the form sends to Notion
 document.getElementById('form-section').addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {

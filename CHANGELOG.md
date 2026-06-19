@@ -6,12 +6,9 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
-### Removed
-- Zone de saisie manuelle d'ISBN (input + bouton "Rechercher") — remplacée par le raccourci iOS qui envoie directement `?isbn=` en URL
-- Styles CSS `.input-row` et `.scan-btn` devenus inutiles
-
 ### Changed
 - Sélecteur de moteur de recherche (BnF / OpenLibrary / Google Books) déplacé dans le panneau ⚙ configuration, persisté en `localStorage`
+- Saisie manuelle d'ISBN conservée (input + bouton "Rechercher") ; lance un nouveau lookup et réinitialise le formulaire si une fiche était déjà affichée
 
 ---
 
