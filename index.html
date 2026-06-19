@@ -9,7 +9,7 @@
 <body>
 
 <div class="container">
-  <h1>GEBIBLIPE <span>Gestionnaire de bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.50.0 — 2026-06-13</span></h1>
+  <h1>GEBIBLIPE <span>Gestionnaire de bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.50.1 — 2026-06-19</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
@@ -207,6 +207,15 @@
     </div>
         <div style="font-size:12px;line-height:1.8;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.50.1</span>
+        <span style="color:var(--muted);margin-left:6px;">2026-06-19</span>
+        <div style="margin-top:8px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Refactoring</div>
+          <div style="color:var(--muted);">• Modularisation en 8 modules ES (src/main.js, ui.js, notion.js, fetchers.js, isbn.js, claude.js, themes.js, config.js)</div>
+          <div style="color:var(--muted);">• Renommage de l'UI de configuration et sécurisation de l'affichage des champs secrets</div>
+        </div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.50.0</span>
         <span style="color:var(--muted);margin-left:6px;">2026-06-13</span>
         <div style="margin-top:8px;">
@@ -235,52 +244,17 @@
         </div>
       </div>
       <div style="padding:0.75rem 1rem;">
-        <span style="font-weight:600;color:var(--text);">v0.48.0</span>
-        <span style="color:var(--muted);margin-left:6px;">2026-05-31</span>
+        <span style="font-weight:600;color:var(--text);">v0.49.0</span>
+        <span style="color:var(--muted);margin-left:6px;">2026-06-13</span>
         <div style="margin-top:8px;">
-
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Moteur de recherche &amp; ISBN</div>
-          <div style="color:var(--muted);">• Saisie manuelle ISBN-13 ou ISBN-10</div>
-          <div style="color:var(--muted);">• Moteur préférentiel configurable (BnF par défaut) — fallback automatique sur OpenLibrary puis Google Books</div>
-          <div style="color:var(--muted);">• BnF via API SRU UNIMARC — meilleure couverture livres français</div>
-          <div style="color:var(--muted);">• Conversion ISBN-13 → ISBN-10 automatique pour les livres anciens</div>
-          <div style="color:var(--muted);">• Couverture récupérée depuis OpenLibrary Covers en fallback</div>
-          <div style="color:var(--muted);">• Détection du paramètre ?isbn= dans l'URL — lookup automatique (compatible Raccourcis iOS)</div>
-
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Champs du livre</div>
-          <div style="color:var(--muted);">• Données bibliographiques : titre, auteur(s), nationalité, éditeur, collection, ISBN, date de publication originale, date de l'édition, pages</div>
-          <div style="color:var(--muted);">• Classification : 11 thèmes et sous-thèmes contextuels, cases vides par défaut</div>
-          <div style="color:var(--muted);">• Bouton "Suggérer via IA" pour le thème/sous-thème (Claude Haiku)</div>
-          <div style="color:var(--muted);">• Statuts : À lire, En cours, Lu, Étude, Collection, Néant</div>
-          <div style="color:var(--muted);">• Priorité de lecture (À lire / En cours)</div>
-          <div style="color:var(--muted);">• Date de lecture : deux selects mois / année</div>
-          <div style="color:var(--muted);">• Note ★ (Lu / Étude)</div>
-          <div style="color:var(--muted);">• Fiche de lecture (tous statuts) — bouton "Générer via IA" (Claude Haiku) + bouton "Effacer"</div>
-          <div style="color:var(--muted);">• Prompt fiche adapté selon le thème : résumé de l'histoire (Littérature) ou idées centrales (autres)</div>
-          <div style="color:var(--muted);">• Fiche générée préfixée par #Générée automatiquement par IA</div>
-          <div style="color:var(--muted);">• État physique : Neuf / Très bon / Bon / Correct / Abîmé</div>
-          <div style="color:var(--muted);">• Livre de collection (checkbox) — détection automatique : Pléiade, Bouquins, Quarto, Classiques Garnier, édition ancienne…</div>
-          <div style="color:var(--muted);">• Commentaire libre</div>
-
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Configuration Notion</div>
-          <div style="color:var(--muted);">• Token, Database ID, proxy Cloudflare et clé API Anthropic stockés en localStorage (jamais dans le code)</div>
-          <div style="color:var(--muted);">• Proxy Cloudflare Worker pour contourner les restrictions CORS</div>
-          <div style="color:var(--muted);">• Accepte l'URL Notion complète pour le Database ID</div>
-          <div style="color:var(--muted);">• Vérification de la connexion et sync des propriétés au clic "Enregistrer"</div>
-
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Ajout Notion</div>
-          <div style="color:var(--muted);">• Envoi direct via API Notion — création d'une page dans la base configurée</div>
-          <div style="color:var(--muted);">• Sync automatique des propriétés avant chaque envoi — création des champs manquants, détection des conflits de type</div>
-          <div style="color:var(--muted);">• Couverture envoyée comme image de couverture de la page Notion</div>
-          <div style="color:var(--muted);">• Contrôle doublon sur ISBN — trois options : Ajouter quand même / Mettre à jour statut &amp; lecture / Annuler</div>
-          <div style="color:var(--muted);">• "Mettre à jour statut &amp; lecture" : met à jour statut, priorité, date de lecture, note et fiche sur la page existante</div>
-
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Interface</div>
-          <div style="color:var(--muted);">• Fichier HTML autonome, zéro dépendance externe, déployé sur GitHub Pages</div>
-          <div style="color:var(--muted);">• Mode clair / sombre automatique (préférences système)</div>
-          <div style="color:var(--muted);">• Panneau de configuration et changelog accessibles en bas de page</div>
-          <div style="color:var(--muted);">• Scanner ISBN suspendu — BarcodeDetector indisponible sur iOS 26 beta</div>
-
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Fiche de lecture</div>
+          <div style="color:var(--muted);">• Nouveau prompt universel — 3 points structurés (propos, enjeux, singularité), adapté à tout type d'œuvre (roman, essai, poésie, traité…)</div>
+          <div style="color:var(--muted);">• Utilise le thème et sous-thème sélectionnés pour contextualiser la génération</div>
+          <div style="color:var(--muted);">• Format bullet homogène, plus court et plus lisible</div>
+          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Citations</div>
+          <div style="color:var(--muted);">• Nouveau bloc "Citations" — saisie libre des extraits marquants</div>
+          <div style="color:var(--muted);">• Champ synchronisé dans Notion (propriété rich_text "Citations")</div>
+          <div style="color:var(--muted);">• Créé automatiquement dans la base si absent</div>
         </div>
       </div>
     </div>

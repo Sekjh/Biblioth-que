@@ -6,6 +6,10 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
+---
+
+## [0.50.1] — 2026-06-19
+
 ### Changed
 - Modularisation de l'application en 8 modules ES (`src/main.js`, `src/ui.js`, `src/notion.js`, `src/fetchers.js`, `src/isbn.js`, `src/claude.js`, `src/themes.js`, `src/config.js`)
 
@@ -66,7 +70,8 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ---
 
-[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.0...HEAD
+[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.1...HEAD
+[0.50.1]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.0...v0.50.1
 [0.50.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.49.0...v0.50.0
 [0.49.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.48.0...v0.49.0
 [0.48.0]: https://github.com/Sekjh/Biblioth-que/releases/tag/v0.48.0
