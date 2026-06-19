@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ISBN → Notion</title>
+<title>GEBIBLIPE</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <h1>ISBN → Notion <span>bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.50 — 13062026</span></h1>
+  <h1>GEBIBLIPE <span>Gestionnaire de bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.50 — 13062026</span></h1>
 
   <div class="card">
     <div class="field" style="margin-bottom:10px;">
-      <label>Moteur de recherche</label>
+      <label>Moteur de recherche privilégié</label>
       <select id="search-engine">
         <option value="bnf">BnF — Bibliothèque nationale de France (recommandé)</option>
         <option value="openlibrary">OpenLibrary</option>
@@ -161,13 +161,13 @@
   </div>
 </div>
 
-<!-- Config Notion -->
+<!-- Config -->
 <div id="config-panel" style="display:none;max-width:600px;margin:0 auto 1rem;padding:0 1rem;">
   <div class="card">
-    <p class="section-title">Configuration Notion</p>
+    <p class="section-title">Configuration</p>
     <div class="field">
       <label>Clé API Anthropic (pour les suggestions IA)</label>
-      <input type="text" id="cfg-anthropic" placeholder="sk-ant-…" style="font-family:monospace;font-size:13px;">
+      <input type="password" id="cfg-anthropic" placeholder="sk-ant-…" style="font-family:monospace;font-size:13px;">
     </div>
     <div class="field">
       <label>URL du proxy Cloudflare</label>
@@ -175,14 +175,14 @@
     </div>
     <div class="field">
       <label>Token d'intégration</label>
-      <input type="text" id="cfg-token" placeholder="secret_…" style="font-family:monospace;font-size:13px;">
+      <input type="password" id="cfg-token" placeholder="secret_…" style="font-family:monospace;font-size:13px;">
     </div>
     <div class="field">
       <label>Database ID</label>
       <input type="text" id="cfg-dbid" placeholder="URL Notion complète ou ID seul (32 caractères)" style="font-family:monospace;font-size:13px;">
     </div>
     <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-      Ces informations sont stockées uniquement sur cet appareil (localStorage). Elles ne sont jamais envoyées ailleurs qu'à l'API Notion.
+      Ces informations sont stockées uniquement sur cet appareil (localStorage). Elles ne sont jamais transmises à nos serveurs.
     </p>
     <button id="btn-save-config">Vérifier et enregistrer</button>
     <p id="config-status" class="status" style="text-align:center;margin-top:6px;"></p>
@@ -195,7 +195,7 @@
     changelog
   </button>
   <button id="btn-toggle-config" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;width:auto;height:auto;padding:4px 8px;text-decoration:underline;text-underline-offset:3px;">
-    ⚙ configuration Notion
+    ⚙ configuration
   </button>
 </div>
 
