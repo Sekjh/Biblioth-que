@@ -9,7 +9,7 @@
 <body>
 
 <div class="container">
-  <h1>GEBIBLIPE <span>Gestionnaire de bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.50.1 — 2026-06-19</span></h1>
+  <h1>GEBIBLIPE <span>Gestionnaire de bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.50.2 — 2026-06-19</span></h1>
 
   <div class="card">
     <div class="input-row">
@@ -207,6 +207,15 @@
     </div>
         <div style="font-size:12px;line-height:1.8;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.50.2</span>
+        <span style="color:var(--muted);margin-left:6px;">2026-06-19</span>
+        <div style="margin-top:8px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">UX</div>
+          <div style="color:var(--muted);">• Moteur de recherche ISBN (BnF / OpenLibrary / Google Books) déplacé dans la configuration — réglage unique persisté</div>
+          <div style="color:var(--muted);">• Saisie manuelle d'ISBN conservée — reset automatique du formulaire si une fiche était déjà affichée</div>
+        </div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.50.1</span>
         <span style="color:var(--muted);margin-left:6px;">2026-06-19</span>
         <div style="margin-top:8px;">
@@ -215,46 +224,14 @@
           <div style="color:var(--muted);">• Renommage de l'UI de configuration et sécurisation de l'affichage des champs secrets</div>
         </div>
       </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+      <div style="padding:0.75rem 1rem;">
         <span style="font-weight:600;color:var(--text);">v0.50.0</span>
         <span style="color:var(--muted);margin-left:6px;">2026-06-13</span>
         <div style="margin-top:8px;">
           <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Qualité & robustesse</div>
           <div style="color:var(--muted);">• Validation ISBN par checksum (algorithme de Luhn) — erreur affichée avant toute recherche si le numéro est invalide</div>
           <div style="color:var(--muted);">• Timeout 5s par source (BnF, OpenLibrary, Google Books) via AbortController — plus de blocage en cas d'API silencieuse</div>
-          <div style="color:var(--muted);">• max_tokens IA 256 → 400 — évite les fiches tronquées</div>
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">UX</div>
-          <div style="color:var(--muted);">• Champs pré-remplis par l'API mis en évidence visuellement (fond légèrement contrasté)</div>
           <div style="color:var(--muted);">• Raccourci Cmd+Entrée (ou Ctrl+Entrée) pour envoyer dans Notion depuis n'importe quel champ du formulaire</div>
-        </div>
-      </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
-        <span style="font-weight:600;color:var(--text);">v0.49.0</span>
-        <span style="color:var(--muted);margin-left:6px;">2026-06-13</span>
-        <div style="margin-top:8px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Fiche de lecture</div>
-          <div style="color:var(--muted);">• Nouveau prompt universel — 3 points structurés (propos, enjeux, singularité), adapté à tout type d'œuvre (roman, essai, poésie, traité…)</div>
-          <div style="color:var(--muted);">• Utilise le thème et sous-thème sélectionnés pour contextualiser la génération</div>
-          <div style="color:var(--muted);">• Format bullet homogène, plus court et plus lisible</div>
-
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Citations</div>
-          <div style="color:var(--muted);">• Nouveau bloc "Citations" — saisie libre des extraits marquants</div>
-          <div style="color:var(--muted);">• Champ synchronisé dans Notion (propriété rich_text "Citations")</div>
-          <div style="color:var(--muted);">• Créé automatiquement dans la base si absent</div>
-        </div>
-      </div>
-      <div style="padding:0.75rem 1rem;">
-        <span style="font-weight:600;color:var(--text);">v0.49.0</span>
-        <span style="color:var(--muted);margin-left:6px;">2026-06-13</span>
-        <div style="margin-top:8px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Fiche de lecture</div>
-          <div style="color:var(--muted);">• Nouveau prompt universel — 3 points structurés (propos, enjeux, singularité), adapté à tout type d'œuvre (roman, essai, poésie, traité…)</div>
-          <div style="color:var(--muted);">• Utilise le thème et sous-thème sélectionnés pour contextualiser la génération</div>
-          <div style="color:var(--muted);">• Format bullet homogène, plus court et plus lisible</div>
-          <div style="font-weight:500;color:var(--text);margin-top:10px;margin-bottom:3px;">Citations</div>
-          <div style="color:var(--muted);">• Nouveau bloc "Citations" — saisie libre des extraits marquants</div>
-          <div style="color:var(--muted);">• Champ synchronisé dans Notion (propriété rich_text "Citations")</div>
-          <div style="color:var(--muted);">• Créé automatiquement dans la base si absent</div>
         </div>
       </div>
     </div>

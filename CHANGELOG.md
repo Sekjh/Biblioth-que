@@ -6,6 +6,10 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
+---
+
+## [0.50.2] — 2026-06-19
+
 ### Changed
 - Sélecteur de moteur de recherche (BnF / OpenLibrary / Google Books) déplacé dans le panneau ⚙ configuration, persisté en `localStorage`
 - Saisie manuelle d'ISBN conservée (input + bouton "Rechercher") ; lance un nouveau lookup et réinitialise le formulaire si une fiche était déjà affichée
@@ -74,7 +78,8 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ---
 
-[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.1...HEAD
+[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.2...HEAD
+[0.50.2]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.1...v0.50.2
 [0.50.1]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.0...v0.50.1
 [0.50.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.49.0...v0.50.0
 [0.49.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.48.0...v0.49.0
