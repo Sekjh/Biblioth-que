@@ -6,6 +6,9 @@ import { callClaude } from './claude.js';
 let _searchLog = [];
 export function getSearchLog() { return _searchLog; }
 
+let _lastIsbn = '';
+export function getLastIsbn() { return _lastIsbn; }
+
 function shortSource(s = '') {
   return s.replace('BnF ISBN-', 'BnF ').replace('OpenLibrary ISBN-', 'OL ')
           .replace('OpenLibrary', 'OL').replace('Google Books', 'Google').replace('OL Covers', 'OL');
@@ -109,9 +112,21 @@ export function fillForm(b) {
   document.getElementById('f-datelu-annee').value = '';
   document.getElementById('f-fiche').value = '';
   document.getElementById('f-fiche').classList.remove('ai-filled');
+  document.getElementById('f-theme').value = '';
   document.getElementById('f-theme').classList.remove('ai-filled');
   document.getElementById('f-soustheme').classList.remove('ai-filled');
+  updateSousTheme();
+  document.getElementById('f-statut').value = 'À lire';
+  document.getElementById('f-priorite').value = '';
+  document.getElementById('f-note').value = '';
+  document.getElementById('f-etat').value = '';
+  document.getElementById('f-comment').value = '';
   document.getElementById('f-citations').value = '';
+  const themeStatus = document.getElementById('theme-ai-status');
+  const ficheStatus = document.getElementById('fiche-ai-status');
+  if (themeStatus) themeStatus.textContent = '';
+  if (ficheStatus) ficheStatus.textContent = '';
+  toggleLu();
   document.getElementById('found-title').textContent = b.titre || (b.isbn ? 'ISBN : ' + b.isbn : '');
   document.getElementById('source-badge').textContent = b.source ? `Source : ${b.source}` : 'Saisie manuelle';
 
@@ -152,6 +167,9 @@ export async function lookup(isbnArg = '') {
     setStatus('⚠️ ISBN invalide — vérifie le numéro (chiffre de contrôle incorrect).');
     return;
   }
+  _lastIsbn = raw;
+  const btnLookup = document.getElementById('btn-lookup');
+  if (btnLookup) btnLookup.disabled = true;
   setStatus('Recherche en cours…');
   document.getElementById('form-section').style.display = 'none';
 

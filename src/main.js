@@ -1,4 +1,4 @@
-import { initThemes, lookup, updateSousTheme, toggleLu, toggleDevlog, suggestTheme, generateFiche, toggleSourcePopover } from './ui.js';
+import { initThemes, lookup, updateSousTheme, toggleLu, toggleDevlog, suggestTheme, generateFiche, toggleSourcePopover, getLastIsbn } from './ui.js';
 import { sendToNotion, saveConfig, toggleConfig } from './notion.js';
 
 // Populate year select (1980 → current year)
@@ -13,15 +13,17 @@ for (let y = now; y >= 1980; y--) {
 initThemes();
 
 // ISBN input
-document.getElementById('isbn-input').addEventListener('input', function() {
+const isbnInput = document.getElementById('isbn-input');
+const btnLookup = document.getElementById('btn-lookup');
+isbnInput.addEventListener('input', function() {
   this.value = this.value.replace(/[^0-9Xx-]/g, '');
+  const normalized = this.value.trim().replace(/[-\s]/g, '');
+  btnLookup.disabled = normalized !== '' && normalized === getLastIsbn();
 });
-document.getElementById('isbn-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') lookup(document.getElementById('isbn-input').value.trim());
+isbnInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') lookup(isbnInput.value.trim());
 });
-document.getElementById('btn-lookup').addEventListener('click', () =>
-  lookup(document.getElementById('isbn-input').value.trim())
-);
+btnLookup.addEventListener('click', () => lookup(isbnInput.value.trim()));
 
 // Cmd/Ctrl+Enter anywhere in the form sends to Notion
 document.getElementById('form-section').addEventListener('keydown', e => {
