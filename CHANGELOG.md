@@ -6,6 +6,17 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
+### Added
+- Indicateurs visuels d'origine des champs : badge `ISBN` (bleu) sur les champs auto-remplis par lookup, badge `IA` (violet) sur les champs pouvant être générés par IA (thème, sous-thème, fiche)
+- Classe CSS `ai-filled` (fond violacé) appliquée aux champs remplis par IA après génération de fiche ou suggestion de thème ; retirée à chaque nouveau lookup
+- Enrichissement multi-sources : si des champs restent vides après la source principale, les sources suivantes sont interrogées pour les compléter (sans écraser les valeurs existantes)
+- Source détaillée dans le badge : distingue désormais `BnF ISBN-13`, `BnF ISBN-10`, `OpenLibrary ISBN-13`, etc. ; affiche toutes les sources ayant contribué (ex. `BnF ISBN-13 • OpenLibrary ISBN-13`)
+
+### Changed
+- Fiche de lecture générée avec `claude-sonnet-4-6` (au lieu de Haiku) pour une meilleure qualité d'analyse littéraire ; `max_tokens` porté à 600
+- Prompt de la fiche enrichi : l'éditeur et la collection sont passés en contexte pour calibrer le registre (Pléiade, collection académique, etc.)
+- `callClaude()` accepte désormais `{ model, maxTokens }` en second paramètre (défauts : Haiku, 400) — la suggestion de thème continue d'utiliser Haiku
+
 ---
 
 ## [0.50.3] — 2026-06-20

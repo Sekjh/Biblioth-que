@@ -49,7 +49,7 @@ describe('fetchBnF', () => {
     fetch.mockResolvedValueOnce({ ok: true, text: async () => bnfFound });
     const b = { isbn: '9782070360024' };
     await fetchBnF('9782070360024', b);
-    expect(b.source).toBe('BnF');
+    expect(b.source).toBe('BnF ISBN-13');
     expect(b.titre).toContain('Le Capital');
     expect(b.auteur).toContain('Marx');
     expect(b.editeur).toBe('Éditions Sociales');
@@ -72,7 +72,7 @@ describe('fetchBnF', () => {
     const b = { isbn: '9782070360024' };
     await fetchBnF('9782070360024', b);
     expect(fetch).toHaveBeenCalledTimes(2);
-    expect(b.source).toBe('BnF');
+    expect(b.source).toBe('BnF ISBN-10');
   });
 
   test('ne lève pas d\'exception en cas d\'erreur réseau', async () => {
@@ -90,7 +90,7 @@ describe('fetchOpenLibrary', () => {
     fetch.mockResolvedValueOnce({ ok: true, json: async () => olData });
     const b = { isbn: '9782070360024' };
     await fetchOpenLibrary('9782070360024', b);
-    expect(b.source).toBe('OpenLibrary');
+    expect(b.source).toBe('OpenLibrary ISBN-13');
     expect(b.titre).toBeTruthy();
     expect(b.auteur).toContain('Proust');
     expect(b.couverture).toContain('-M.');

@@ -100,6 +100,9 @@ export function fillForm(b) {
   document.getElementById('f-datelu-mois').value = '';
   document.getElementById('f-datelu-annee').value = '';
   document.getElementById('f-fiche').value = '';
+  document.getElementById('f-fiche').classList.remove('ai-filled');
+  document.getElementById('f-theme').classList.remove('ai-filled');
+  document.getElementById('f-soustheme').classList.remove('ai-filled');
   document.getElementById('f-citations').value = '';
   document.getElementById('found-title').textContent = b.titre || (b.isbn ? 'ISBN : ' + b.isbn : '');
   document.getElementById('source-badge').textContent = b.source ? `Source : ${b.source}` : 'Saisie manuelle';
@@ -135,12 +138,18 @@ export async function lookup(isbnArg = '') {
   const rest = all.filter(f => f !== first);
   const fetchers = [first, ...rest];
 
-  try {
-    for (const fetcher of fetchers) {
-      if (b.titre) break;
-      await fetcher(raw, b);
+  const sources = [];
+  for (const fetcher of fetchers) {
+    if (['titre', 'auteur', 'editeur', 'pages'].every(f => b[f])) break;
+    const tmp = { isbn: raw, titre: '', auteur: '', editeur: '', collection: '', dateed: '', pages: '', couverture: '', source: '' };
+    try { await fetcher(raw, tmp); } catch(e) {}
+    let contributed = false;
+    for (const key of ['titre', 'auteur', 'editeur', 'collection', 'dateed', 'pages', 'couverture']) {
+      if (!b[key] && tmp[key]) { b[key] = tmp[key]; contributed = true; }
     }
-  } catch(e) {}
+    if (contributed && tmp.source) sources.push(tmp.source);
+  }
+  b.source = sources.join(' • ');
 
   setStatus(b.titre ? '' : 'ISBN introuvable — remplis manuellement.');
 
@@ -184,6 +193,8 @@ Réponds UNIQUEMENT avec ce format JSON, sans texte autour :
       if (sousTheme && THEMES[theme].includes(sousTheme)) {
         document.getElementById('f-soustheme').value = sousTheme;
       }
+      document.getElementById('f-theme').classList.add('ai-filled');
+      document.getElementById('f-soustheme').classList.add('ai-filled');
       status.textContent = `✓ Suggestion : ${theme}${sousTheme ? ' › ' + sousTheme : ''}`;
     } else {
       status.textContent = '⚠️ Suggestion hors liste — vérifie manuellement.';
@@ -195,9 +206,11 @@ Réponds UNIQUEMENT avec ce format JSON, sans texte autour :
 }
 
 export async function generateFiche() {
-  const titre   = document.getElementById('f-titre').value.trim();
-  const auteur  = document.getElementById('f-auteur').value.trim();
-  const datepub = document.getElementById('f-datepub').value.trim();
+  const titre      = document.getElementById('f-titre').value.trim();
+  const auteur     = document.getElementById('f-auteur').value.trim();
+  const datepub    = document.getElementById('f-datepub').value.trim();
+  const editeur    = document.getElementById('f-editeur').value.trim();
+  const collection = document.getElementById('f-collection-ed').value.trim();
   if (!titre) {
     document.getElementById('fiche-ai-status').textContent = '⚠️ Renseigne d\'abord le titre.';
     return;
@@ -211,7 +224,7 @@ export async function generateFiche() {
   const sousTheme = document.getElementById('f-soustheme').value.trim();
   const themeCtx  = [theme, sousTheme].filter(Boolean).join(' › ');
 
-  const prompt = `Fiche de lecture pour "${titre}"${auteur ? ' de ' + auteur : ''}${datepub ? ' (' + datepub + ')' : ''}${themeCtx ? ' — ' + themeCtx : ''}.
+  const prompt = `Fiche de lecture pour "${titre}"${auteur ? ' de ' + auteur : ''}${datepub ? ' (' + datepub + ')' : ''}${editeur ? ' — éd. ' + editeur : ''}${collection ? ' (' + collection + ')' : ''}${themeCtx ? ' — ' + themeCtx : ''}.
 
 Réponds en exactement 3 points courts, une ligne chacun, format :
 • [propos ou intrigue centrale — une phrase]
@@ -222,8 +235,10 @@ Règles : pas de titre, pas d'introduction, pas de jugement stylistique. Adapte-
 Commence ta réponse par "#Générée automatiquement par IA" puis une ligne vide, puis les 3 points.`;
 
   try {
-    const fiche = await callClaude(prompt);
-    document.getElementById('f-fiche').value = fiche.trim();
+    const fiche = await callClaude(prompt, { model: 'claude-sonnet-4-6', maxTokens: 600 });
+    const ficheEl = document.getElementById('f-fiche');
+    ficheEl.value = fiche.trim();
+    ficheEl.classList.add('ai-filled');
     status.textContent = '✓ Fiche générée — vérifie et modifie si nécessaire.';
   } catch(e) {
     status.textContent = '🔴 ' + e.message;

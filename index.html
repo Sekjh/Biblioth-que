@@ -34,14 +34,14 @@
     <div class="card">
       <p class="section-title">Données bibliographiques</p>
       <div class="grid2">
-        <div class="field full"><label>Titre</label><input type="text" id="f-titre"></div>
-        <div class="field full"><label>Auteur(s)</label><input type="text" id="f-auteur"></div>
+        <div class="field full"><label>Titre <span class="lbl-src">ISBN</span></label><input type="text" id="f-titre"></div>
+        <div class="field full"><label>Auteur(s) <span class="lbl-src">ISBN</span></label><input type="text" id="f-auteur"></div>
         <div class="field"><label>Nationalité de l'auteur</label><input type="text" id="f-nationalite" placeholder="ex. Français, Allemand…"></div>
-        <div class="field"><label>Éditeur</label><input type="text" id="f-editeur"></div>
-        <div class="field"><label>Collection</label><input type="text" id="f-collection-ed"></div>
+        <div class="field"><label>Éditeur <span class="lbl-src">ISBN</span></label><input type="text" id="f-editeur"></div>
+        <div class="field"><label>Collection <span class="lbl-src">ISBN</span></label><input type="text" id="f-collection-ed"></div>
         <div class="field"><label>Publication originale</label><input type="text" id="f-datepub" placeholder="ex. 1739"></div>
-        <div class="field"><label>Date de cette édition</label><input type="text" id="f-dateed" placeholder="ex. 2025"></div>
-        <div class="field"><label>Nombre de pages</label><input type="text" id="f-pages"></div>
+        <div class="field"><label>Date de cette édition <span class="lbl-src">ISBN</span></label><input type="text" id="f-dateed" placeholder="ex. 2025"></div>
+        <div class="field"><label>Nombre de pages <span class="lbl-src">ISBN</span></label><input type="text" id="f-pages"></div>
         <div class="field"><label>ISBN</label><input type="text" id="f-isbn" readonly style="opacity:0.5"></div>
       </div>
     </div>
@@ -49,8 +49,8 @@
     <div class="card">
       <p class="section-title">Classification thématique</p>
       <div class="grid2">
-        <div class="field"><label>Thème</label><select id="f-theme"></select></div>
-        <div class="field"><label>Sous-thème</label><select id="f-soustheme"></select></div>
+        <div class="field"><label>Thème <span class="lbl-src lbl-src--ia">IA</span></label><select id="f-theme"></select></div>
+        <div class="field"><label>Sous-thème <span class="lbl-src lbl-src--ia">IA</span></label><select id="f-soustheme"></select></div>
       </div>
       <button class="outline" id="btn-suggest-theme" style="height:34px;font-size:12px;margin-top:4px;">
         ✦ Suggérer via IA
@@ -104,7 +104,7 @@
           </select>
         </div>
         <div class="field full" id="fiche-block" style="grid-column:1/-1;">
-          <label>Fiche de lecture</label>
+          <label>Fiche de lecture <span class="lbl-src lbl-src--ia">IA</span></label>
           <textarea id="f-fiche" rows="3" placeholder="Flashcard de lecture…"></textarea>
           <button class="outline" id="btn-generate-fiche" style="height:34px;font-size:12px;margin-top:6px;">
             ✦ Générer via IA

@@ -1,6 +1,6 @@
 import { getConfig } from './config.js';
 
-export async function callClaude(prompt) {
+export async function callClaude(prompt, { model = 'claude-haiku-4-5-20251001', maxTokens = 400 } = {}) {
   const cfg = getConfig();
   if (!cfg.anthropicKey) throw new Error('Clé API Anthropic non configurée (voir ⚙ configuration).');
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -12,8 +12,8 @@ export async function callClaude(prompt) {
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 400,
+      model,
+      max_tokens: maxTokens,
       messages: [{ role: 'user', content: prompt }]
     })
   });

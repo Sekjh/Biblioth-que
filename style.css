@@ -37,4 +37,7 @@ button.outline { background: transparent; color: var(--text); border: 1px solid 
 .hidden { display: none; }
 #form-section { display: none; }
 .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.prefilled { background: color-mix(in srgb, var(--bg2) 70%, var(--text) 5%); border-color: color-mix(in srgb, var(--border) 60%, var(--text) 20%); }
+.prefilled { background: color-mix(in srgb, var(--bg2) 60%, #2563eb 8%); border-color: color-mix(in srgb, var(--border) 50%, #2563eb 25%); }
+.ai-filled { background: color-mix(in srgb, var(--bg2) 80%, #7c5cbf 12%); border-color: color-mix(in srgb, var(--border) 50%, #7c5cbf 30%); }
+.lbl-src { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding: 1px 5px; border-radius: 3px; vertical-align: middle; margin-left: 4px; background: color-mix(in srgb, var(--bg2) 50%, #2563eb 20%); color: color-mix(in srgb, var(--muted) 60%, #2563eb 60%); }
+.lbl-src--ia { background: color-mix(in srgb, var(--bg2) 50%, #7c5cbf 20%); color: color-mix(in srgb, var(--muted) 40%, #7c5cbf 70%); }

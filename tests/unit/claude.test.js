@@ -30,7 +30,7 @@ describe('callClaude', () => {
     expect(result).toBe('Claude dit bonjour');
   });
 
-  test('envoie le bon modèle et max_tokens', async () => {
+  test('envoie le bon modèle et max_tokens par défaut (Haiku, 400)', async () => {
     localStorage.setItem('anthropic_key', 'sk-ant-abc');
     fetch.mockResolvedValueOnce({
       ok: true,
@@ -42,6 +42,19 @@ describe('callClaude', () => {
     expect(body.model).toBe('claude-haiku-4-5-20251001');
     expect(body.max_tokens).toBe(400);
     expect(body.messages[0].content).toBe('mon prompt');
+  });
+
+  test('envoie le modèle et max_tokens personnalisés quand fournis', async () => {
+    localStorage.setItem('anthropic_key', 'sk-ant-abc');
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ content: [{ text: 'ok' }] }),
+    });
+    const callClaude = await getClaude();
+    await callClaude('mon prompt', { model: 'claude-sonnet-4-6', maxTokens: 600 });
+    const body = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(body.model).toBe('claude-sonnet-4-6');
+    expect(body.max_tokens).toBe(600);
   });
 
   test("envoie les en-têtes API corrects", async () => {

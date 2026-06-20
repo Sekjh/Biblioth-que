@@ -24,7 +24,7 @@ export async function fetchBnF(raw, b) {
       if(!b.auteur){const na2=gfa('701','a'),nb2=gfa('701','b');b.auteur=na2.map((a,i)=>nb2[i]?nb2[i]+' '+a:a).join(', ');}
       b.editeur=gf('210','c')||gf('214','c'); b.dateed=gf('210','d')||gf('214','d');
       b.collection=gf('225','a'); b.pages=gf('215','a');
-      if(b.titre) { b.source='BnF'; return; }
+      if(b.titre) { b.source = (isbn === raw) ? 'BnF ISBN-13' : 'BnF ISBN-10'; return; }
     } catch(e) {}
   }
 }
@@ -43,7 +43,7 @@ export async function fetchOpenLibrary(raw, b) {
       b.titre=det.title||''; b.auteur=det.authors?.map(a=>a.name).join(', ')||'';
       b.editeur=det.publishers?.[0]||''; b.dateed=det.publish_date||''; b.pages=det.number_of_pages||'';
       if(entry.thumbnail_url) b.couverture=entry.thumbnail_url.replace('-S.','-M.');
-      if(b.titre) { b.source='OpenLibrary'; return; }
+      if(b.titre) { b.source = (isbn === raw) ? 'OpenLibrary ISBN-13' : 'OpenLibrary ISBN-10'; return; }
     } catch(e) {}
   }
 }
