@@ -6,6 +6,10 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
+---
+
+## [0.53.0] — 2026-06-20
+
 ### Added
 - Panneau de documentation in-app accessible via le bouton `[doc]` dans la barre de navigation bas de page : liste des fonctionnalités, schéma d'architecture (APIs bibliographiques, Claude, Cloudflare, Notion), guide d'initialisation pas-à-pas
 - Exclusion mutuelle des panneaux de navigation (changelog, configuration, doc) : l'ouverture de l'un ferme les autres
