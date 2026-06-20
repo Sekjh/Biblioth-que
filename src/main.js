@@ -1,4 +1,4 @@
-import { initThemes, lookup, updateSousTheme, toggleLu, toggleDevlog, suggestTheme, generateFiche } from './ui.js';
+import { initThemes, lookup, updateSousTheme, toggleLu, toggleDevlog, suggestTheme, generateFiche, toggleSourcePopover } from './ui.js';
 import { sendToNotion, saveConfig, toggleConfig } from './notion.js';
 
 // Populate year select (1980 → current year)
@@ -59,6 +59,13 @@ document.getElementById('btn-clear-fiche').addEventListener('click', () => {
 
 // Envoi Notion
 document.getElementById('btn-send-notion').addEventListener('click', sendToNotion);
+
+// Source popover
+document.getElementById('source-badge').addEventListener('click', toggleSourcePopover);
+document.addEventListener('click', e => {
+  if (!e.target.closest('#source-badge') && !e.target.closest('#source-popover'))
+    document.getElementById('source-popover').hidden = true;
+});
 
 // Barre de navigation bas de page
 document.getElementById('btn-toggle-devlog').addEventListener('click', toggleDevlog);

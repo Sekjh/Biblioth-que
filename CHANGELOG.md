@@ -7,6 +7,10 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 ## [Unreleased]
 
 ### Added
+- Badge source par champ : le badge "ISBN" dans chaque label affiche désormais la source exacte du champ (ex. "BnF 13", "OL 13", "Google") plutôt que le texte générique "ISBN"
+- Popover sources : cliquer sur le badge source du bandeau ouvre un panneau détaillant chaque source consultée (✓ Importé · champs, — Aucun résultat, ✗ Erreur, · Non consulté)
+- Couverture agrandie (90 px) avec badge source conditionnel (visible uniquement si la couverture a été importée)
+- `searchLog` et `fieldSources` dans le modèle de données de `lookup()` pour tracer l'origine de chaque champ et le résultat par source
 - Indicateurs visuels d'origine des champs : badge `ISBN` (bleu) sur les champs auto-remplis par lookup, badge `IA` (violet) sur les champs pouvant être générés par IA (thème, sous-thème, fiche)
 - Classe CSS `ai-filled` (fond violacé) appliquée aux champs remplis par IA après génération de fiche ou suggestion de thème ; retirée à chaque nouveau lookup
 - Enrichissement multi-sources : si des champs restent vides après la source principale, les sources suivantes sont interrogées pour les compléter (sans écraser les valeurs existantes)

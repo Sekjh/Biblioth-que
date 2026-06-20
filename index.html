@@ -22,10 +22,16 @@
   <div id="form-section">
     <div class="card">
       <div class="cover-row">
-        <img id="cover-img" class="cover-img" src="" alt="Couverture" style="display:none">
+        <div class="cover-wrap">
+          <img id="cover-img" class="cover-img" src="" alt="Couverture" style="display:none">
+          <span class="cover-src-badge" id="cover-src-badge"></span>
+        </div>
         <div style="flex:1">
           <p style="font-size:13px;font-weight:500;line-height:1.4;" id="found-title"></p>
-          <span class="source-badge" id="source-badge"></span>
+          <div class="source-popover-wrap">
+            <button class="source-badge" id="source-badge"></button>
+            <div class="source-popover" id="source-popover" hidden></div>
+          </div>
           <p style="font-size:12px;color:var(--muted);margin-top:6px;">Modifie les champs si nécessaire.</p>
         </div>
       </div>

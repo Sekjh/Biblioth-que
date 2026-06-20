@@ -3,6 +3,14 @@ import { validateIsbn } from './isbn.js';
 import { fetchBnF, fetchOpenLibrary, fetchGoogle, fetchCover } from './fetchers.js';
 import { callClaude } from './claude.js';
 
+let _searchLog = [];
+export function getSearchLog() { return _searchLog; }
+
+function shortSource(s = '') {
+  return s.replace('BnF ISBN-', 'BnF ').replace('OpenLibrary ISBN-', 'OL ')
+          .replace('OpenLibrary', 'OL').replace('Google Books', 'Google').replace('OL Covers', 'OL');
+}
+
 export function setStatus(msg) {
   document.getElementById('status').textContent = msg;
 }
@@ -106,8 +114,26 @@ export function fillForm(b) {
   document.getElementById('f-citations').value = '';
   document.getElementById('found-title').textContent = b.titre || (b.isbn ? 'ISBN : ' + b.isbn : '');
   document.getElementById('source-badge').textContent = b.source ? `Source : ${b.source}` : 'Saisie manuelle';
+
+  _searchLog = b.searchLog ?? [];
+
+  const FIELD_BADGE_MAP = [
+    ['f-titre', 'titre'], ['f-auteur', 'auteur'], ['f-editeur', 'editeur'],
+    ['f-collection-ed', 'collection'], ['f-dateed', 'dateed'], ['f-pages', 'pages'],
+  ];
+  for (const [fid, key] of FIELD_BADGE_MAP) {
+    const badge = document.getElementById(fid)?.closest('.field')?.querySelector('.lbl-src:not(.lbl-src--ia)');
+    if (badge) badge.textContent = b.fieldSources?.[key] ? shortSource(b.fieldSources[key]) : 'ISBN';
+  }
+
   const img = document.getElementById('cover-img');
-  if (b.couverture) { img.src = b.couverture; img.style.display = 'block'; } else { img.style.display = 'none'; }
+  const coverBadge = document.getElementById('cover-src-badge');
+  if (b.couverture) {
+    img.src = b.couverture; img.style.display = 'block'; img.classList.add('prefilled');
+    if (coverBadge) coverBadge.textContent = shortSource(b.fieldSources?.couverture || '');
+  } else {
+    img.style.display = 'none'; img.classList.remove('prefilled');
+  }
 
   const collectionHint = detectCollection(b);
   document.getElementById('f-collection').checked = collectionHint.detected;
@@ -138,16 +164,41 @@ export async function lookup(isbnArg = '') {
   const rest = all.filter(f => f !== first);
   const fetchers = [first, ...rest];
 
+  const fetcherNames = new Map([
+    [fetchBnF, 'BnF'], [fetchOpenLibrary, 'OpenLibrary'], [fetchGoogle, 'Google Books'],
+  ]);
+  b.searchLog = [];
+  b.fieldSources = {};
   const sources = [];
-  for (const fetcher of fetchers) {
-    if (['titre', 'auteur', 'editeur', 'pages'].every(f => b[f])) break;
-    const tmp = { isbn: raw, titre: '', auteur: '', editeur: '', collection: '', dateed: '', pages: '', couverture: '', source: '' };
-    try { await fetcher(raw, tmp); } catch(e) {}
-    let contributed = false;
-    for (const key of ['titre', 'auteur', 'editeur', 'collection', 'dateed', 'pages', 'couverture']) {
-      if (!b[key] && tmp[key]) { b[key] = tmp[key]; contributed = true; }
+
+  for (let i = 0; i < fetchers.length; i++) {
+    const fetcher = fetchers[i];
+    if (['titre', 'auteur', 'editeur', 'pages'].every(f => b[f])) {
+      for (const f of fetchers.slice(i)) {
+        b.searchLog.push({ source: fetcherNames.get(f), status: 'non_consulté', fields: [] });
+      }
+      break;
     }
-    if (contributed && tmp.source) sources.push(tmp.source);
+    const tmp = { isbn: raw, titre: '', auteur: '', editeur: '', collection: '', dateed: '', pages: '', couverture: '', source: '' };
+    let logStatus = 'non_trouvé';
+    try {
+      await fetcher(raw, tmp);
+      logStatus = tmp.source ? 'trouvé' : 'non_trouvé';
+    } catch(e) {
+      logStatus = 'erreur';
+    }
+    const contributed = [];
+    if (tmp.source) {
+      for (const key of ['titre', 'auteur', 'editeur', 'collection', 'dateed', 'pages', 'couverture']) {
+        if (!b[key] && tmp[key]) { b[key] = tmp[key]; b.fieldSources[key] = tmp.source; contributed.push(key); }
+      }
+    }
+    b.searchLog.push({
+      source: tmp.source || fetcherNames.get(fetcher),
+      status: contributed.length > 0 ? 'importé' : logStatus,
+      fields: contributed,
+    });
+    if (contributed.length && tmp.source) sources.push(tmp.source);
   }
   b.source = sources.join(' • ');
 
@@ -155,8 +206,14 @@ export async function lookup(isbnArg = '') {
 
   if (!b.couverture) {
     const cover = await fetchCover(raw);
-    if (cover) b.couverture = cover;
+    if (cover) { b.couverture = cover; b.fieldSources.couverture = 'OL Covers'; }
   }
+  const coversContributed = b.fieldSources.couverture ? ['couverture'] : [];
+  b.searchLog.push({
+    source: 'OL Covers',
+    status: coversContributed.length ? 'importé' : 'non_trouvé',
+    fields: coversContributed,
+  });
 
   fillForm(b);
 }
@@ -203,6 +260,31 @@ Réponds UNIQUEMENT avec ce format JSON, sans texte autour :
     status.textContent = '🔴 ' + e.message;
   }
   btn.disabled = false;
+}
+
+function statusLabel(s) {
+  return { importé: 'Importé', trouvé: 'Trouvé', non_trouvé: 'Aucun résultat', erreur: 'Erreur réseau', non_consulté: 'Non consulté' }[s] || s;
+}
+
+export function toggleSourcePopover() {
+  const pop = document.getElementById('source-popover');
+  if (!pop) return;
+  if (!pop.hidden) { pop.hidden = true; return; }
+
+  const LABELS = { titre: 'Titre', auteur: 'Auteur', editeur: 'Éditeur', collection: 'Collection', dateed: 'Date éd.', pages: 'Pages', couverture: 'Couverture' };
+  const STATUS_META = {
+    importé:      { icon: '✓', cls: 'sp-ok' },
+    trouvé:       { icon: '◦', cls: 'sp-found' },
+    non_trouvé:   { icon: '—', cls: 'sp-none' },
+    erreur:       { icon: '✗', cls: 'sp-err' },
+    non_consulté: { icon: '·', cls: 'sp-skip' },
+  };
+  pop.innerHTML = _searchLog.map(({ source, status, fields }) => {
+    const { icon, cls } = STATUS_META[status] || STATUS_META.non_trouvé;
+    const detail = fields.length ? fields.map(f => LABELS[f] || f).join(', ') : statusLabel(status);
+    return `<div class="sp-row"><span class="sp-src">${source}</span><span class="sp-status ${cls}">${icon} ${detail}</span></div>`;
+  }).join('');
+  pop.hidden = false;
 }
 
 export async function generateFiche() {
