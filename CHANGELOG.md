@@ -6,6 +6,10 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
+---
+
+## [0.51.0] — 2026-06-20
+
 ### Added
 - Badge source par champ : le badge "ISBN" dans chaque label affiche désormais la source exacte du champ (ex. "BnF 13", "OL 13", "Google") plutôt que le texte générique "ISBN"
 - Popover sources : cliquer sur le badge source du bandeau ouvre un panneau détaillant chaque source consultée (✓ Importé · champs, — Aucun résultat, ✗ Erreur, · Non consulté)
@@ -20,6 +24,7 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 - Fiche de lecture générée avec `claude-sonnet-4-6` (au lieu de Haiku) pour une meilleure qualité d'analyse littéraire ; `max_tokens` porté à 600
 - Prompt de la fiche enrichi : l'éditeur et la collection sont passés en contexte pour calibrer le registre (Pléiade, collection académique, etc.)
 - `callClaude()` accepte désormais `{ model, maxTokens }` en second paramètre (défauts : Haiku, 400) — la suggestion de thème continue d'utiliser Haiku
+- Reset complet du formulaire à chaque nouveau lookup (thème, statut, note, état, commentaire inclus) ; bouton "Rechercher" grisé tant que l'ISBN saisi correspond au dernier ISBN recherché
 
 ---
 
@@ -103,7 +108,8 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ---
 
-[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.3...HEAD
+[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.51.0...HEAD
+[0.51.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.3...v0.51.0
 [0.50.3]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.2...v0.50.3
 [0.50.2]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.1...v0.50.2
 [0.50.1]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.0...v0.50.1
