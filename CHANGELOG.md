@@ -6,6 +6,10 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
+---
+
+## [0.50.3] — 2026-06-20
+
 ### Added
 - Suite de tests automatisés avec Vitest + jsdom : 107 tests couvrant les 7 modules (`isbn`, `themes`, `config`, `claude`, `fetchers`, `ui`, `notion`) et 2 flows d'intégration (lookup fallback BnF→OL→Google, détection de doublons Notion)
 - `package.json` avec scripts `npm test`, `npm run test:watch`, `npm run test:coverage`
@@ -84,7 +88,8 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ---
 
-[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.2...HEAD
+[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.3...HEAD
+[0.50.3]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.2...v0.50.3
 [0.50.2]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.1...v0.50.2
 [0.50.1]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.0...v0.50.1
 [0.50.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.49.0...v0.50.0
