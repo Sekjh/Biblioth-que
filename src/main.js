@@ -31,8 +31,19 @@ document.getElementById('form-section').addEventListener('keydown', e => {
   }
 });
 
+// Retrait du badge quand l'utilisateur modifie un champ auto-rempli
+for (const id of ['f-titre', 'f-auteur', 'f-editeur', 'f-collection-ed', 'f-dateed', 'f-pages']) {
+  document.getElementById(id).addEventListener('input', function() { this.classList.remove('prefilled'); });
+}
+document.getElementById('f-fiche').addEventListener('input', function() { this.classList.remove('ai-filled'); });
+document.getElementById('f-soustheme').addEventListener('change', function() { this.classList.remove('ai-filled'); });
+
 // Classification
-document.getElementById('f-theme').addEventListener('change', updateSousTheme);
+document.getElementById('f-theme').addEventListener('change', () => {
+  updateSousTheme();
+  document.getElementById('f-theme').classList.remove('ai-filled');
+  document.getElementById('f-soustheme').classList.remove('ai-filled');
+});
 document.getElementById('btn-suggest-theme').addEventListener('click', suggestTheme);
 
 // Statut & lecture
@@ -41,7 +52,9 @@ document.getElementById('f-statut').addEventListener('change', toggleLu);
 // Fiche de lecture
 document.getElementById('btn-generate-fiche').addEventListener('click', generateFiche);
 document.getElementById('btn-clear-fiche').addEventListener('click', () => {
-  document.getElementById('f-fiche').value = '';
+  const fiche = document.getElementById('f-fiche');
+  fiche.value = '';
+  fiche.classList.remove('ai-filled');
 });
 
 // Envoi Notion
