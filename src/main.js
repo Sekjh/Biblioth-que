@@ -1,4 +1,4 @@
-import { initThemes, lookup, updateSousTheme, toggleLu, toggleDevlog, suggestTheme, generateFiche, toggleSourcePopover, getLastIsbn, setLastIsbn, fillFormFromNotion, setStatus } from './ui.js';
+import { initThemes, lookup, updateSousTheme, toggleLu, toggleDevlog, suggestTheme, generateFiche, toggleSourcePopover, getLastIsbn, setLastIsbn, fillFormFromNotion, setStatus, complementFromSources } from './ui.js';
 import { sendToNotion, saveConfig, toggleConfig, lookupFromNotion, setCurrentPageId, clearCurrentPageId } from './notion.js';
 import { validateIsbn } from './isbn.js';
 import { getConfig } from './config.js';
@@ -57,14 +57,31 @@ function showNotionChoice(result, isbn) {
   btnNotion.addEventListener('click', () => {
     setCurrentPageId(result.pageId);
     fillFormFromNotion(result.book);
-    statusEl.textContent = '';
+
+    // Proposer de compléter les champs vides via les sources bibliographiques
+    statusEl.innerHTML = '';
     statusEl.style.whiteSpace = '';
+    const btnComplement = document.createElement('button');
+    btnComplement.textContent = 'Compléter les champs avec les sources bibliothéquaires';
+    btnComplement.style.cssText = 'height:34px;font-size:12px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;width:auto;margin-top:2px;';
+    btnComplement.addEventListener('click', async () => {
+      btnComplement.disabled = true;
+      btnComplement.textContent = '🔄 Recherche en cours…';
+      const anyFilled = await complementFromSources(isbn);
+      if (anyFilled) {
+        statusEl.textContent = '✓ Champs vides complétés depuis les sources.';
+        setTimeout(() => { statusEl.textContent = ''; }, 3000);
+      } else {
+        statusEl.textContent = '';
+      }
+    });
+    statusEl.appendChild(btnComplement);
   });
 
-  const btnSources = document.createElement('button');
-  btnSources.textContent = 'Rechercher les sources';
-  btnSources.style.cssText = 'height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;width:auto;';
-  btnSources.addEventListener('click', async () => {
+  const btnAdd = document.createElement('button');
+  btnAdd.textContent = 'Ajouter une nouvelle entrée';
+  btnAdd.style.cssText = 'height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;width:auto;';
+  btnAdd.addEventListener('click', async () => {
     clearCurrentPageId();
     document.getElementById('btn-send-notion').textContent = 'Envoyer dans Notion';
     statusEl.textContent = '';
@@ -73,7 +90,7 @@ function showNotionChoice(result, isbn) {
   });
 
   btnRow.appendChild(btnNotion);
-  btnRow.appendChild(btnSources);
+  btnRow.appendChild(btnAdd);
   statusEl.appendChild(btnRow);
 
   document.getElementById('btn-lookup').disabled = false;
@@ -100,11 +117,17 @@ document.getElementById('form-section').addEventListener('keydown', e => {
   }
 });
 
-// Retrait du badge quand l'utilisateur modifie un champ auto-rempli
+// Retrait des badges quand l'utilisateur modifie un champ auto-rempli
 for (const id of ['f-titre', 'f-auteur', 'f-editeur', 'f-collection-ed', 'f-dateed', 'f-pages']) {
   document.getElementById(id).addEventListener('input', function() {
     this.classList.remove('prefilled', 'notion-filled');
   });
+}
+for (const id of ['f-nationalite', 'f-datepub', 'f-citations', 'f-comment']) {
+  document.getElementById(id).addEventListener('input', function() { this.classList.remove('notion-filled'); });
+}
+for (const id of ['f-priorite', 'f-note', 'f-etat', 'f-datelu-mois', 'f-datelu-annee']) {
+  document.getElementById(id).addEventListener('change', function() { this.classList.remove('notion-filled'); });
 }
 document.getElementById('f-fiche').addEventListener('input', function() {
   this.classList.remove('ai-filled', 'notion-filled');
@@ -122,7 +145,10 @@ document.getElementById('f-theme').addEventListener('change', () => {
 document.getElementById('btn-suggest-theme').addEventListener('click', suggestTheme);
 
 // Statut & lecture
-document.getElementById('f-statut').addEventListener('change', toggleLu);
+document.getElementById('f-statut').addEventListener('change', function() {
+  this.classList.remove('notion-filled');
+  toggleLu();
+});
 
 // Fiche de lecture
 document.getElementById('btn-generate-fiche').addEventListener('click', generateFiche);

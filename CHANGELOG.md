@@ -7,6 +7,8 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 ## [Unreleased]
 
 ### Added
+- Bouton "Compléter les champs avec les sources bibliothéquaires" affiché après chargement depuis Notion : recherche les sources et remplit uniquement les champs encore vides sans écraser les données Notion
+- `complementFromSources(isbn)` dans `ui.js` : recherche bibliographique non-destructive (ne touche qu'aux champs vides du formulaire)
 - Pré-vérification Notion avant la recherche bibliographique : à chaque scan d'ISBN, l'app interroge d'abord la base Notion pour détecter une fiche existante
 - Choix utilisateur quand un ISBN est trouvé dans Notion : "Charger depuis Notion" ou "Rechercher les sources" (affichage dans la zone de statut, sans modal)
 - Chargement complet depuis Notion : tous les champs sont pré-remplis (titre, auteur, statut, thème, fiche, note, etc.) avec la classe `.notion-filled` (teinte ambrée) et le badge "Notion" dans les labels
@@ -23,6 +25,11 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 - 2 nouvelles fixtures : `notion-query-found.json` (page complète), `notion-query-two-results.json` (tri par ancienneté)
 
 ### Changed
+- Bouton "Rechercher les sources" renommé "Ajouter une nouvelle entrée" dans le choix Notion
+- Badge de couverture orange (#d97706) quand la couverture provient de Notion (était bleu)
+- `fillForm(b)` efface toutes les classes `.notion-filled` résiduelles en début d'appel
+- `suggestTheme()` et `generateFiche()` retirent `.notion-filled` avant d'appliquer `.ai-filled`
+- Tous les champs du formulaire ont désormais un listener qui retire `.notion-filled` à la modification (statut, priorité, note, état, date de lecture, nationalité, date pub, citations, commentaire)
 - `sendToNotion()` : route vers `updatePageFull` si `_currentPageId` défini, vers `doSend` sinon ; le contrôle doublon est supprimé
 - Bouton "Envoyer dans Notion" devient "Mettre à jour dans Notion" quand une fiche est chargée depuis Notion
 - `main.js` : tous les déclencheurs du lookup (bouton, Enter, URL param) passent par `startSearch()` au lieu d'appeler `lookup()` directement

@@ -106,6 +106,8 @@ export function detectCollection(b) {
 }
 
 export function fillForm(b) {
+  // Effacer toutes les classes notion-filled résiduelles d'un éventuel chargement Notion précédent
+  document.querySelectorAll('.notion-filled').forEach(el => el.classList.remove('notion-filled'));
   setField('f-titre', b.titre);
   setField('f-auteur', b.auteur);
   document.getElementById('f-nationalite').value = b.nationalite || '';
@@ -371,7 +373,9 @@ Réponds UNIQUEMENT avec ce format JSON, sans texte autour :
       if (sousTheme && THEMES[theme].includes(sousTheme)) {
         document.getElementById('f-soustheme').value = sousTheme;
       }
+      document.getElementById('f-theme').classList.remove('notion-filled');
       document.getElementById('f-theme').classList.add('ai-filled');
+      document.getElementById('f-soustheme').classList.remove('notion-filled');
       document.getElementById('f-soustheme').classList.add('ai-filled');
       status.textContent = `✓ Suggestion : ${theme}${sousTheme ? ' › ' + sousTheme : ''}`;
     } else {
@@ -441,10 +445,70 @@ Commence ta réponse par "#Générée automatiquement par IA" puis une ligne vid
     const fiche = await callClaude(prompt, { model: 'claude-sonnet-4-6', maxTokens: 600 });
     const ficheEl = document.getElementById('f-fiche');
     ficheEl.value = fiche.trim();
+    ficheEl.classList.remove('notion-filled');
     ficheEl.classList.add('ai-filled');
     status.textContent = '✓ Fiche générée — vérifie et modifie si nécessaire.';
   } catch(e) {
     status.textContent = '🔴 ' + e.message;
   }
   btn.disabled = false;
+}
+
+// Complète les champs vides du formulaire via les sources bibliographiques sans toucher
+// aux champs déjà remplis (notamment ceux venus de Notion).
+export async function complementFromSources(isbn) {
+  const engine = localStorage.getItem('search_engine') || 'bnf';
+  const get = id => document.getElementById(id)?.value?.trim() || '';
+  const current = {
+    titre:      get('f-titre'),
+    auteur:     get('f-auteur'),
+    editeur:    get('f-editeur'),
+    collection: get('f-collection-ed'),
+    dateed:     get('f-dateed'),
+    pages:      get('f-pages'),
+  };
+  const idMap = {
+    titre: 'f-titre', auteur: 'f-auteur', editeur: 'f-editeur',
+    collection: 'f-collection-ed', dateed: 'f-dateed', pages: 'f-pages',
+  };
+  const hasCover = () => {
+    const img = document.getElementById('cover-img');
+    return img && img.style.display !== 'none' && !!img.src;
+  };
+
+  const all = [fetchBnF, fetchOpenLibrary, fetchGoogle];
+  const preferred = { bnf: fetchBnF, openlibrary: fetchOpenLibrary, google: fetchGoogle };
+  const first = preferred[engine] || fetchBnF;
+  const fetchers = [first, ...all.filter(f => f !== first)];
+
+  let anyFilled = false;
+
+  for (const fetcher of fetchers) {
+    if (['titre', 'auteur', 'editeur', 'pages'].every(f => current[f])) break;
+    const tmp = { isbn, titre: '', auteur: '', editeur: '', collection: '', dateed: '', pages: '', couverture: '', source: '' };
+    try { await fetcher(isbn, tmp); } catch { continue; }
+    if (!tmp.source) continue;
+    for (const key of ['titre', 'auteur', 'editeur', 'collection', 'dateed', 'pages']) {
+      if (!current[key] && tmp[key]) {
+        setField(idMap[key], tmp[key]);
+        current[key] = tmp[key];
+        anyFilled = true;
+      }
+    }
+  }
+
+  if (!hasCover()) {
+    const cover = await fetchCover(isbn);
+    if (cover) {
+      const img = document.getElementById('cover-img');
+      const coverBadge = document.getElementById('cover-src-badge');
+      img.src = cover;
+      img.style.display = 'block';
+      img.classList.add('prefilled');
+      if (coverBadge) coverBadge.textContent = 'OL';
+      anyFilled = true;
+    }
+  }
+
+  return anyFilled;
 }

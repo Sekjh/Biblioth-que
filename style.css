@@ -63,4 +63,4 @@ button.outline { background: transparent; color: var(--text); border: 1px solid 
 .field:has(input.notion-filled) .lbl-src--notion,
 .field:has(select.notion-filled) .lbl-src--notion,
 .field:has(textarea.notion-filled) .lbl-src--notion { display: inline; }
-.cover-img.notion-filled ~ .cover-src-badge { display: block; }
+.cover-img.notion-filled ~ .cover-src-badge { display: block; background: color-mix(in srgb, var(--bg2) 50%, #d97706 20%); color: color-mix(in srgb, var(--muted) 60%, #d97706 60%); }
