@@ -6,6 +6,10 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
+---
+
+## [0.52.0] — 2026-06-20
+
 ### Added
 - Bouton "Compléter les champs avec les sources bibliothéquaires" affiché après chargement depuis Notion : recherche les sources et remplit uniquement les champs encore vides sans écraser les données Notion
 - `complementFromSources(isbn)` dans `ui.js` : recherche bibliographique non-destructive (ne touche qu'aux champs vides du formulaire)
@@ -143,7 +147,8 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ---
 
-[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.51.0...HEAD
+[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.52.0...HEAD
+[0.52.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.51.0...v0.52.0
 [0.51.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.3...v0.51.0
 [0.50.3]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.2...v0.50.3
 [0.50.2]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.1...v0.50.2
