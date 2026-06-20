@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+// Anciennement "duplicate-flow" — teste désormais le flux Notion lookup + send
+import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -7,11 +8,11 @@ import { dirname, join } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fixturesDir = join(__dirname, '../fixtures');
 
-const dbFull         = JSON.parse(readFileSync(join(fixturesDir, 'notion-db-full.json'), 'utf8'));
-const queryEmpty     = JSON.parse(readFileSync(join(fixturesDir, 'notion-query-empty.json'), 'utf8'));
-const queryDuplicate = JSON.parse(readFileSync(join(fixturesDir, 'notion-query-duplicate.json'), 'utf8'));
+const dbFull     = JSON.parse(readFileSync(join(fixturesDir, 'notion-db-full.json'), 'utf8'));
+const queryEmpty = JSON.parse(readFileSync(join(fixturesDir, 'notion-query-empty.json'), 'utf8'));
+const queryFound = JSON.parse(readFileSync(join(fixturesDir, 'notion-query-found.json'), 'utf8'));
 
-import { sendToNotion, confirmSend } from '../../src/notion.js';
+import { sendToNotion, lookupFromNotion, setCurrentPageId, clearCurrentPageId } from '../../src/notion.js';
 
 const TOKEN = 'ntn_testtoken';
 const DBID  = 'abcdef1234567890abcdef1234567890';
@@ -48,71 +49,63 @@ beforeEach(() => {
   localStorage.setItem('notion_token', TOKEN);
   localStorage.setItem('notion_dbid', DBID);
   localStorage.setItem('notion_proxy', 'https://proxy.test');
+  clearCurrentPageId();
   vi.stubGlobal('fetch', vi.fn());
 });
 
-// ─── Pas de doublon → envoi direct ───────────────────────────────────────────
+afterEach(() => {
+  clearCurrentPageId();
+});
 
-describe('Pas de doublon', () => {
-  test("envoie directement quand l'ISBN n'existe pas encore", async () => {
-    fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => dbFull })        // syncDatabaseProps
-      .mockResolvedValueOnce({ ok: true, json: async () => queryEmpty })    // checkDuplicate
-      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });         // doSend POST
-    await sendToNotion();
-    expect(document.getElementById('notion-status').textContent).toContain('Ajouté dans Notion');
+// ─── lookupFromNotion (intégration) ──────────────────────────────────────────
+
+describe('lookupFromNotion — intégration', () => {
+  test("retourne found: false quand l'ISBN est absent de Notion", async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => queryEmpty });
+    const result = await lookupFromNotion('9999999999999', { token: TOKEN, dbId: DBID, proxy: 'https://proxy.test' });
+    expect(result.found).toBe(false);
+  });
+
+  test('retourne found: true avec toutes les données quand ISBN trouvé', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => queryFound });
+    const result = await lookupFromNotion('9782070360024', { token: TOKEN, dbId: DBID, proxy: 'https://proxy.test' });
+    expect(result.found).toBe(true);
+    expect(result.book.titre).toBe('Le Capital');
+    expect(result.book.fiche).toBe('Ma fiche de lecture.');
+    expect(result.book.note).toBe('★★★★★');
   });
 });
 
-// ─── Doublon détecté ─────────────────────────────────────────────────────────
+// ─── sendToNotion sans _currentPageId → création ─────────────────────────────
 
-describe('Doublon détecté', () => {
-  test('affiche le titre existant et les 3 boutons dans notion-status', async () => {
+describe('sendToNotion — mode création (pas de _currentPageId)', () => {
+  test("envoie POST /v1/pages quand l'ISBN n'est pas déjà dans Notion", async () => {
     fetch
       .mockResolvedValueOnce({ ok: true, json: async () => dbFull })
-      .mockResolvedValueOnce({ ok: true, json: async () => queryDuplicate });
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
     await sendToNotion();
-    const status = document.getElementById('notion-status');
-    expect(status.innerHTML).toContain('Le Capital');
-    expect(status.textContent).toContain('Ajouter quand même');
-    expect(status.textContent).toContain('Mettre à jour');
-    expect(status.textContent).toContain('Annuler');
-  });
-
-  test("clic 'Annuler' → notion-status est vidé", async () => {
-    fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => dbFull })
-      .mockResolvedValueOnce({ ok: true, json: async () => queryDuplicate });
-    await sendToNotion();
-    const btnAnnuler = Array.from(document.querySelectorAll('button'))
-      .find(b => b.textContent === 'Annuler');
-    expect(btnAnnuler).toBeTruthy();
-    btnAnnuler.click();
-    expect(document.getElementById('notion-status').textContent).toBe('');
-  });
-
-  test("le bouton 'Ajouter quand même' est présent dans le DOM", async () => {
-    fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => dbFull })
-      .mockResolvedValueOnce({ ok: true, json: async () => queryDuplicate });
-    await sendToNotion();
-    const btnAdd = Array.from(document.querySelectorAll('button'))
-      .find(b => b.textContent === 'Ajouter quand même');
-    expect(btnAdd).toBeTruthy();
-  });
-
-  test("confirmSend() crée une page via POST /v1/pages", async () => {
-    fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => dbFull }) // syncDatabaseProps
-      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });  // doSend POST
-    await confirmSend();
+    expect(document.getElementById('notion-status').textContent).toContain('Ajouté dans Notion');
     const postCall = fetch.mock.calls.find(c => c[1]?.method === 'POST' && c[0].includes('/v1/pages'));
     expect(postCall).toBeTruthy();
-    expect(document.getElementById('notion-status').textContent).toContain('Ajouté dans Notion');
   });
 });
 
-// ─── Pas de credentials configurés ───────────────────────────────────────────
+// ─── sendToNotion avec _currentPageId → mise à jour ──────────────────────────
+
+describe('sendToNotion — mode mise à jour (avec _currentPageId)', () => {
+  test('envoie PATCH /v1/pages/{id} quand _currentPageId est défini', async () => {
+    setCurrentPageId('page-abc-123');
+    fetch
+      .mockResolvedValueOnce({ ok: true, json: async () => dbFull })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    await sendToNotion();
+    expect(document.getElementById('notion-status').textContent).toContain('Mis à jour dans Notion');
+    const patchCall = fetch.mock.calls.find(c => c[1]?.method === 'PATCH' && c[0].includes('/v1/pages/page-abc-123'));
+    expect(patchCall).toBeTruthy();
+  });
+});
+
+// ─── Credentials absents ─────────────────────────────────────────────────────
 
 describe('Credentials absents', () => {
   test("affiche un message de configuration quand le token est absent", async () => {

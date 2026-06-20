@@ -1,5 +1,7 @@
-import { initThemes, lookup, updateSousTheme, toggleLu, toggleDevlog, suggestTheme, generateFiche, toggleSourcePopover, getLastIsbn } from './ui.js';
-import { sendToNotion, saveConfig, toggleConfig } from './notion.js';
+import { initThemes, lookup, updateSousTheme, toggleLu, toggleDevlog, suggestTheme, generateFiche, toggleSourcePopover, getLastIsbn, setLastIsbn, fillFormFromNotion, setStatus } from './ui.js';
+import { sendToNotion, saveConfig, toggleConfig, lookupFromNotion, setCurrentPageId, clearCurrentPageId } from './notion.js';
+import { validateIsbn } from './isbn.js';
+import { getConfig } from './config.js';
 
 // Populate year select (1980 → current year)
 const sel = document.getElementById('f-datelu-annee');
@@ -12,7 +14,72 @@ for (let y = now; y >= 1980; y--) {
 
 initThemes();
 
-// ISBN input
+// ── Pré-vérification Notion puis recherche ─────────────────────────────────
+async function startSearch(isbn) {
+  const raw = isbn.trim().replace(/[-\s]/g, '');
+  if (!raw) return;
+  if (!validateIsbn(raw)) {
+    setStatus('⚠️ ISBN invalide — vérifie le numéro (chiffre de contrôle incorrect).');
+    return;
+  }
+  setLastIsbn(raw);
+  document.getElementById('btn-lookup').disabled = true;
+  setStatus('🔄 Vérification dans Notion…');
+
+  const cfg = getConfig();
+  const notionResult = await lookupFromNotion(raw, cfg);
+
+  if (notionResult.found) {
+    showNotionChoice(notionResult, raw);
+  } else {
+    clearCurrentPageId();
+    document.getElementById('btn-send-notion').textContent = 'Envoyer dans Notion';
+    await lookup(raw);
+  }
+}
+
+function showNotionChoice(result, isbn) {
+  const statusEl = document.getElementById('status');
+  statusEl.innerHTML = '';
+  statusEl.style.whiteSpace = 'normal';
+
+  const msg = document.createElement('span');
+  msg.textContent = `📚 "${result.book.titre || isbn}" trouvé dans ta bibliothèque Notion.`;
+  statusEl.appendChild(msg);
+  statusEl.appendChild(document.createElement('br'));
+
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;';
+
+  const btnNotion = document.createElement('button');
+  btnNotion.textContent = 'Charger depuis Notion';
+  btnNotion.style.cssText = 'height:34px;font-size:13px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);padding:0 1rem;cursor:pointer;width:auto;';
+  btnNotion.addEventListener('click', () => {
+    setCurrentPageId(result.pageId);
+    fillFormFromNotion(result.book);
+    statusEl.textContent = '';
+    statusEl.style.whiteSpace = '';
+  });
+
+  const btnSources = document.createElement('button');
+  btnSources.textContent = 'Rechercher les sources';
+  btnSources.style.cssText = 'height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;width:auto;';
+  btnSources.addEventListener('click', async () => {
+    clearCurrentPageId();
+    document.getElementById('btn-send-notion').textContent = 'Envoyer dans Notion';
+    statusEl.textContent = '';
+    statusEl.style.whiteSpace = '';
+    await lookup(isbn);
+  });
+
+  btnRow.appendChild(btnNotion);
+  btnRow.appendChild(btnSources);
+  statusEl.appendChild(btnRow);
+
+  document.getElementById('btn-lookup').disabled = false;
+}
+
+// ── ISBN input ──────────────────────────────────────────────────────────────
 const isbnInput = document.getElementById('isbn-input');
 const btnLookup = document.getElementById('btn-lookup');
 isbnInput.addEventListener('input', function() {
@@ -21,9 +88,9 @@ isbnInput.addEventListener('input', function() {
   btnLookup.disabled = normalized !== '' && normalized === getLastIsbn();
 });
 isbnInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') lookup(isbnInput.value.trim());
+  if (e.key === 'Enter') startSearch(isbnInput.value.trim());
 });
-btnLookup.addEventListener('click', () => lookup(isbnInput.value.trim()));
+btnLookup.addEventListener('click', () => startSearch(isbnInput.value.trim()));
 
 // Cmd/Ctrl+Enter anywhere in the form sends to Notion
 document.getElementById('form-section').addEventListener('keydown', e => {
@@ -35,16 +102,22 @@ document.getElementById('form-section').addEventListener('keydown', e => {
 
 // Retrait du badge quand l'utilisateur modifie un champ auto-rempli
 for (const id of ['f-titre', 'f-auteur', 'f-editeur', 'f-collection-ed', 'f-dateed', 'f-pages']) {
-  document.getElementById(id).addEventListener('input', function() { this.classList.remove('prefilled'); });
+  document.getElementById(id).addEventListener('input', function() {
+    this.classList.remove('prefilled', 'notion-filled');
+  });
 }
-document.getElementById('f-fiche').addEventListener('input', function() { this.classList.remove('ai-filled'); });
-document.getElementById('f-soustheme').addEventListener('change', function() { this.classList.remove('ai-filled'); });
+document.getElementById('f-fiche').addEventListener('input', function() {
+  this.classList.remove('ai-filled', 'notion-filled');
+});
+document.getElementById('f-soustheme').addEventListener('change', function() {
+  this.classList.remove('ai-filled', 'notion-filled');
+});
 
 // Classification
 document.getElementById('f-theme').addEventListener('change', () => {
   updateSousTheme();
-  document.getElementById('f-theme').classList.remove('ai-filled');
-  document.getElementById('f-soustheme').classList.remove('ai-filled');
+  document.getElementById('f-theme').classList.remove('ai-filled', 'notion-filled');
+  document.getElementById('f-soustheme').classList.remove('ai-filled', 'notion-filled');
 });
 document.getElementById('btn-suggest-theme').addEventListener('click', suggestTheme);
 
@@ -56,7 +129,7 @@ document.getElementById('btn-generate-fiche').addEventListener('click', generate
 document.getElementById('btn-clear-fiche').addEventListener('click', () => {
   const fiche = document.getElementById('f-fiche');
   fiche.value = '';
-  fiche.classList.remove('ai-filled');
+  fiche.classList.remove('ai-filled', 'notion-filled');
 });
 
 // Envoi Notion
@@ -81,5 +154,5 @@ document.getElementById('btn-save-config').addEventListener('click', saveConfig)
 const params = new URLSearchParams(window.location.search);
 const isbnParam = params.get('isbn');
 if (isbnParam) {
-  setTimeout(() => lookup(isbnParam.replace(/[^0-9Xx]/g, '')), 300);
+  setTimeout(() => startSearch(isbnParam.replace(/[^0-9Xx]/g, '')), 300);
 }

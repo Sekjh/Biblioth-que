@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, test, expect, beforeEach } from 'vitest';
-import { detectCollection, setField, toggleLu } from '../../src/ui.js';
+import { detectCollection, setField, setFieldNotion, toggleLu, fillFormFromNotion } from '../../src/ui.js';
 
 // ─── detectCollection ─────────────────────────────────────────────────────────
 
@@ -155,5 +155,208 @@ describe('toggleLu', () => {
     toggleLu();
     expect(document.getElementById('datelu-block').classList.contains('hidden')).toBe(true);
     expect(document.getElementById('priorite-block').classList.contains('hidden')).toBe(true);
+  });
+});
+
+// ─── setFieldNotion ──────────────────────────────────────────────────────────
+
+describe('setFieldNotion', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<input id="f-titre" />';
+  });
+
+  test('définit la valeur et ajoute la classe notion-filled quand la valeur est truthy', () => {
+    setFieldNotion('f-titre', 'Le Capital');
+    const el = document.getElementById('f-titre');
+    expect(el.value).toBe('Le Capital');
+    expect(el.classList.contains('notion-filled')).toBe(true);
+    expect(el.classList.contains('prefilled')).toBe(false);
+  });
+
+  test('vide la valeur et retire notion-filled quand la valeur est falsy', () => {
+    document.getElementById('f-titre').classList.add('notion-filled');
+    setFieldNotion('f-titre', '');
+    const el = document.getElementById('f-titre');
+    expect(el.value).toBe('');
+    expect(el.classList.contains('notion-filled')).toBe(false);
+  });
+
+  test('retire prefilled et ai-filled lors du set', () => {
+    const el = document.getElementById('f-titre');
+    el.classList.add('prefilled', 'ai-filled');
+    setFieldNotion('f-titre', 'Valeur');
+    expect(el.classList.contains('prefilled')).toBe(false);
+    expect(el.classList.contains('ai-filled')).toBe(false);
+    expect(el.classList.contains('notion-filled')).toBe(true);
+  });
+
+  test('gère null sans erreur', () => {
+    setFieldNotion('f-titre', null);
+    expect(document.getElementById('f-titre').value).toBe('');
+    expect(document.getElementById('f-titre').classList.contains('notion-filled')).toBe(false);
+  });
+});
+
+// ─── fillFormFromNotion ───────────────────────────────────────────────────────
+
+const FULL_DOM = `
+  <div id="form-section" style="display:none">
+    <div class="field"><label>Titre</label><input id="f-titre" /></div>
+    <div class="field"><label>Auteur</label><input id="f-auteur" /></div>
+    <div class="field"><label>Nationalité</label><input id="f-nationalite" /></div>
+    <div class="field"><label>Éditeur</label><input id="f-editeur" /></div>
+    <div class="field"><label>Collection</label><input id="f-collection-ed" /></div>
+    <div class="field"><label>ISBN</label><input id="f-isbn" /></div>
+    <div class="field"><label>Date éd.</label><input id="f-dateed" /></div>
+    <div class="field"><label>Publication</label><input id="f-datepub" /></div>
+    <div class="field"><label>Pages</label><input id="f-pages" /></div>
+    <div class="field"><label>Thème</label>
+      <select id="f-theme">
+        <option value="">—</option>
+        <option value="Histoire">Histoire</option>
+      </select>
+    </div>
+    <div class="field"><label>Sous-thème</label>
+      <select id="f-soustheme">
+        <option value="">—</option>
+      </select>
+    </div>
+    <div class="field"><label>Statut</label>
+      <select id="f-statut">
+        <option value="À lire">À lire</option>
+        <option value="Lu">Lu</option>
+      </select>
+    </div>
+    <div class="field" id="priorite-block"><label>Priorité</label>
+      <select id="f-priorite"><option value="">—</option><option value="Haute">Haute</option></select>
+    </div>
+    <div class="field" id="datelu-block" class="hidden"><label>Date lecture</label>
+      <select id="f-datelu-mois"><option value="">—</option><option value="Juin">Juin</option></select>
+      <select id="f-datelu-annee"><option value="">—</option><option value="2024">2024</option></select>
+    </div>
+    <div class="field" id="note-block" class="hidden"><label>Note</label>
+      <select id="f-note"><option value="">—</option><option value="★★★★★">★★★★★</option></select>
+    </div>
+    <div class="field"><label>État</label>
+      <select id="f-etat"><option value="">—</option><option value="Neuf">Neuf</option></select>
+    </div>
+    <div class="field"><input type="checkbox" id="f-collection" /></div>
+    <p id="collection-hint"></p>
+    <div class="field"><label>Fiche</label><textarea id="f-fiche"></textarea></div>
+    <div class="field"><label>Citations</label><textarea id="f-citations"></textarea></div>
+    <div class="field"><label>Commentaire</label><textarea id="f-comment"></textarea></div>
+    <p id="theme-ai-status"></p>
+    <p id="fiche-ai-status"></p>
+  </div>
+  <p id="found-title"></p>
+  <button class="source-badge" id="source-badge"></button>
+  <div id="cover-wrap">
+    <img id="cover-img" style="display:none" src="" />
+    <span id="cover-src-badge"></span>
+  </div>
+  <button id="btn-send-notion">Envoyer dans Notion</button>
+`;
+
+const NOTION_BOOK = {
+  isbn: '9782070360024',
+  titre: 'Le Capital',
+  auteur: 'Karl Marx',
+  nationalite: 'Allemand',
+  editeur: 'Éditions Sociales',
+  collection: '',
+  dateed: '1969',
+  datepub: '1867',
+  pages: '900',
+  theme: 'Histoire',
+  soustheme: '',
+  statut: 'Lu',
+  priorite: '',
+  datem: 'Juin',
+  datey: '2024',
+  note: '★★★★★',
+  etat: '',
+  fcollection: false,
+  fiche: 'Ma fiche de lecture.',
+  citations: '',
+  commentaire: '',
+  couverture: 'https://covers.example.com/img.jpg',
+  fromNotion: true,
+  notionPageId: 'page-abc-123',
+  source: 'Notion',
+  searchLog: [],
+  fieldSources: {},
+};
+
+describe('fillFormFromNotion', () => {
+  beforeEach(() => {
+    document.body.innerHTML = FULL_DOM;
+  });
+
+  test('remplit les champs bibliographiques avec notion-filled', () => {
+    fillFormFromNotion(NOTION_BOOK);
+    expect(document.getElementById('f-titre').value).toBe('Le Capital');
+    expect(document.getElementById('f-titre').classList.contains('notion-filled')).toBe(true);
+    expect(document.getElementById('f-auteur').classList.contains('notion-filled')).toBe(true);
+    expect(document.getElementById('f-pages').value).toBe('900');
+  });
+
+  test('remplit les champs lecture avec notion-filled', () => {
+    fillFormFromNotion(NOTION_BOOK);
+    expect(document.getElementById('f-statut').value).toBe('Lu');
+    expect(document.getElementById('f-statut').classList.contains('notion-filled')).toBe(true);
+    expect(document.getElementById('f-datelu-mois').value).toBe('Juin');
+    expect(document.getElementById('f-datelu-mois').classList.contains('notion-filled')).toBe(true);
+    expect(document.getElementById('f-datelu-annee').value).toBe('2024');
+    expect(document.getElementById('f-note').value).toBe('★★★★★');
+    expect(document.getElementById('f-note').classList.contains('notion-filled')).toBe(true);
+  });
+
+  test('remplit les champs texte libres avec notion-filled', () => {
+    fillFormFromNotion(NOTION_BOOK);
+    expect(document.getElementById('f-fiche').value).toBe('Ma fiche de lecture.');
+    expect(document.getElementById('f-fiche').classList.contains('notion-filled')).toBe(true);
+  });
+
+  test('met le thème avec notion-filled', () => {
+    fillFormFromNotion(NOTION_BOOK);
+    expect(document.getElementById('f-theme').value).toBe('Histoire');
+    expect(document.getElementById('f-theme').classList.contains('notion-filled')).toBe(true);
+  });
+
+  test('ne met pas notion-filled sur un champ vide', () => {
+    fillFormFromNotion(NOTION_BOOK);
+    expect(document.getElementById('f-collection-ed').classList.contains('notion-filled')).toBe(false);
+    expect(document.getElementById('f-etat').classList.contains('notion-filled')).toBe(false);
+  });
+
+  test('affiche la couverture avec la classe notion-filled', () => {
+    fillFormFromNotion(NOTION_BOOK);
+    const img = document.getElementById('cover-img');
+    expect(img.style.display).toBe('block');
+    expect(img.classList.contains('notion-filled')).toBe(true);
+    expect(img.classList.contains('prefilled')).toBe(false);
+  });
+
+  test("change le texte du bouton en 'Mettre à jour dans Notion'", () => {
+    fillFormFromNotion(NOTION_BOOK);
+    expect(document.getElementById('btn-send-notion').textContent).toBe('Mettre à jour dans Notion');
+  });
+
+  test('affiche le titre dans found-title', () => {
+    fillFormFromNotion(NOTION_BOOK);
+    expect(document.getElementById('found-title').textContent).toBe('Le Capital');
+  });
+
+  test('affiche la section formulaire', () => {
+    fillFormFromNotion(NOTION_BOOK);
+    expect(document.getElementById('form-section').style.display).toBe('block');
+  });
+
+  test('retire prefilled existant avant de positionner notion-filled', () => {
+    document.getElementById('f-titre').classList.add('prefilled');
+    fillFormFromNotion(NOTION_BOOK);
+    const el = document.getElementById('f-titre');
+    expect(el.classList.contains('prefilled')).toBe(false);
+    expect(el.classList.contains('notion-filled')).toBe(true);
   });
 });

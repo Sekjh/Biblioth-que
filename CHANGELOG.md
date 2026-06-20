@@ -6,6 +6,34 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
+### Added
+- Pré-vérification Notion avant la recherche bibliographique : à chaque scan d'ISBN, l'app interroge d'abord la base Notion pour détecter une fiche existante
+- Choix utilisateur quand un ISBN est trouvé dans Notion : "Charger depuis Notion" ou "Rechercher les sources" (affichage dans la zone de statut, sans modal)
+- Chargement complet depuis Notion : tous les champs sont pré-remplis (titre, auteur, statut, thème, fiche, note, etc.) avec la classe `.notion-filled` (teinte ambrée) et le badge "Notion" dans les labels
+- `lookupFromNotion(isbn, cfg)` dans `notion.js` : requête Notion par ISBN, retourne le plus ancien résultat si plusieurs trouvés (`created_time` ASC)
+- `updatePageFull(pageId, cfg, sync)` dans `notion.js` : mise à jour PATCH de tous les champs d'une page Notion existante
+- État `_currentPageId` dans `notion.js` avec `setCurrentPageId` / `clearCurrentPageId` pour router entre création et mise à jour
+- `fillFormFromNotion(b)` dans `ui.js` : remplit le formulaire depuis une fiche Notion avec la classe `.notion-filled` sur chaque champ non vide
+- `setFieldNotion(id, val)` dans `ui.js` : variante de `setField` qui applique `.notion-filled` au lieu de `.prefilled`
+- `setLastIsbn(isbn)` dans `ui.js` : setter public pour synchroniser l'état du bouton "Rechercher" quand Notion répond avant le lookup
+- `startSearch(isbn)` dans `main.js` : point d'entrée unique du lookup — pré-vérifie Notion puis lance le lookup bibliographique si nécessaire
+- Classe CSS `.notion-filled` (teinte ambrée `#d97706`) et `.lbl-src--notion` (badge ambre dans les labels)
+- Badges "Notion" ajoutés dans les labels de tous les champs pouvant être chargés depuis Notion (14 champs)
+- 20 nouveaux tests couvrant `lookupFromNotion`, `updatePageFull`, routage `sendToNotion`, `setFieldNotion`, `fillFormFromNotion`
+- 2 nouvelles fixtures : `notion-query-found.json` (page complète), `notion-query-two-results.json` (tri par ancienneté)
+
+### Changed
+- `sendToNotion()` : route vers `updatePageFull` si `_currentPageId` défini, vers `doSend` sinon ; le contrôle doublon est supprimé
+- Bouton "Envoyer dans Notion" devient "Mettre à jour dans Notion" quand une fiche est chargée depuis Notion
+- `main.js` : tous les déclencheurs du lookup (bouton, Enter, URL param) passent par `startSearch()` au lieu d'appeler `lookup()` directement
+- Retrait des classes `.notion-filled` en plus de `.prefilled` dans les listeners de modification utilisateur
+- Test d'intégration `duplicate-flow.test.js` réécrit pour le nouveau flux (lookup Notion + modes création/mise à jour)
+
+### Removed
+- `checkDuplicate()` (remplacée par `lookupFromNotion`)
+- `confirmSend()` (plus de dialog doublon)
+- `updateStatutLecture()` (remplacée par `updatePageFull` qui met à jour tous les champs)
+
 ---
 
 ## [0.51.0] — 2026-06-20

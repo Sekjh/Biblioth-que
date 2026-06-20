@@ -1,25 +1,73 @@
 import { getConfig, notionUrl, notionHeaders } from './config.js';
 import { EXPECTED_PROPS, propSchema } from './themes.js';
 
-export async function checkDuplicate(isbn, cfg) {
-  if (!cfg.token || !cfg.dbId) return { isDuplicate: false };
+// Mode création (null) ou mise à jour (pageId de la page existante)
+let _currentPageId = null;
+export function setCurrentPageId(id) { _currentPageId = id; }
+export function clearCurrentPageId() { _currentPageId = null; }
+export function getCurrentPageId() { return _currentPageId; }
+
+function mapNotionToBook(page) {
+  const p = page.properties || {};
+  const txt  = key => p[key]?.rich_text?.[0]?.plain_text || '';
+  const ttl  = key => p[key]?.title?.[0]?.plain_text || '';
+  const num  = key => p[key]?.number != null ? String(p[key].number) : '';
+  const sel  = key => p[key]?.select?.name || '';
+  const chk  = key => p[key]?.checkbox || false;
+
+  const datelu = txt('Date de lecture');
+  const parts  = datelu.trim().split(/\s+/);
+  const datem  = parts[0] || '';
+  const datey  = parts[1] || '';
+
+  return {
+    isbn:        txt('ISBN'),
+    titre:       ttl('Nom'),
+    auteur:      txt('Auteur'),
+    nationalite: txt('Nationalité'),
+    editeur:     txt('Éditeur'),
+    collection:  txt('Collection'),
+    dateed:      txt('Date édition'),
+    datepub:     txt('Publication originale'),
+    pages:       num('Pages'),
+    theme:       sel('Thème'),
+    soustheme:   sel('Sous-thème'),
+    statut:      sel('Statut'),
+    priorite:    sel('Priorité'),
+    datem,
+    datey,
+    note:        sel('Note'),
+    etat:        sel('État'),
+    fcollection: chk('Collection (livre)'),
+    fiche:       txt('Fiche de lecture'),
+    citations:   txt('Citations'),
+    commentaire: txt('Commentaire'),
+    couverture:  page.cover?.external?.url || page.cover?.file?.url || '',
+    fromNotion:  true,
+    notionPageId: page.id,
+    source:      'Notion',
+    searchLog:   [],
+    fieldSources: {},
+  };
+}
+
+export async function lookupFromNotion(isbn, cfg) {
+  if (!cfg.token || !cfg.dbId) return { found: false };
   try {
     const res = await fetch(notionUrl('/v1/databases/' + cfg.dbId + '/query', cfg), {
       method: 'POST',
       headers: notionHeaders(cfg.token),
       body: JSON.stringify({ filter: { property: 'ISBN', rich_text: { equals: isbn } } })
     });
-    if (!res.ok) return { isDuplicate: false };
+    if (!res.ok) return { found: false };
     const data = await res.json();
-    if (data.results?.length > 0) {
-      const existing = data.results[0];
-      const title = existing.properties?.Nom?.title?.[0]?.plain_text || '(sans titre)';
-      const pageId = existing.id;
-      return { isDuplicate: true, title, pageId };
-    }
-    return { isDuplicate: false };
-  } catch(e) {
-    return { isDuplicate: false };
+    if (!data.results?.length) return { found: false };
+    // Prendre le plus ancien (created_time ASC)
+    const sorted = [...data.results].sort((a, b) => new Date(a.created_time) - new Date(b.created_time));
+    const page = sorted[0];
+    return { found: true, book: mapNotionToBook(page), pageId: page.id };
+  } catch {
+    return { found: false };
   }
 }
 
@@ -138,7 +186,6 @@ export async function sendToNotion() {
     return;
   }
 
-  const get = id => document.getElementById(id)?.value?.trim() || '';
   const notionStatus = document.getElementById('notion-status');
   notionStatus.textContent = '🔄 Vérification de la base…';
 
@@ -148,104 +195,14 @@ export async function sendToNotion() {
     return;
   }
 
-  const isbn = get('f-isbn');
-  if (isbn) {
-    notionStatus.textContent = '🔄 Vérification des doublons…';
-    const dup = await checkDuplicate(isbn, cfg);
-    if (dup.isDuplicate) {
-      notionStatus.textContent = '';
-      notionStatus.style.whiteSpace = 'normal';
-
-      const msg = document.createElement('span');
-      msg.innerHTML = `⚠️ <strong>${dup.title}</strong> existe déjà dans ta base (ISBN : ${isbn}).`;
-      notionStatus.appendChild(msg);
-      notionStatus.appendChild(document.createElement('br'));
-
-      const btnRow = document.createElement('div');
-      btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;';
-
-      const btnAdd = document.createElement('button');
-      btnAdd.textContent = 'Ajouter quand même';
-      btnAdd.style.cssText = 'height:34px;font-size:13px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);padding:0 1rem;cursor:pointer;';
-      btnAdd.addEventListener('click', confirmSend);
-
-      const btnUpdate = document.createElement('button');
-      btnUpdate.textContent = 'Mettre à jour statut & lecture';
-      btnUpdate.style.cssText = 'height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;';
-      btnUpdate.addEventListener('click', () => updateStatutLecture(dup.pageId));
-
-      const btnCancel = document.createElement('button');
-      btnCancel.textContent = 'Annuler';
-      btnCancel.style.cssText = 'height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;';
-      btnCancel.addEventListener('click', () => { notionStatus.textContent = ''; notionStatus.style.whiteSpace = ''; });
-
-      btnRow.appendChild(btnAdd);
-      btnRow.appendChild(btnUpdate);
-      btnRow.appendChild(btnCancel);
-      notionStatus.appendChild(btnRow);
-      return;
-    }
-  }
-
-  await doSend(cfg, sync);
-}
-
-export async function confirmSend() {
-  const cfg = getConfig();
-  const notionStatus = document.getElementById('notion-status');
-  notionStatus.textContent = '🔄 Envoi en cours…';
-  const sync = await syncDatabaseProps(cfg.token, cfg.dbId, cfg);
-  if (!sync.ok) { notionStatus.textContent = '🔴 ' + sync.error; return; }
-  await doSend(cfg, sync);
-}
-
-export async function updateStatutLecture(pageId) {
-  const cfg = getConfig();
-  const notionStatus = document.getElementById('notion-status');
-  const get = id => document.getElementById(id)?.value?.trim() || '';
-  notionStatus.textContent = '🔄 Mise à jour en cours…';
-
-  const mois = get('f-datelu-mois');
-  const annee = get('f-datelu-annee');
-  const dateLue = mois && annee ? mois + ' ' + annee : (mois || annee || '');
-
-  const props = {
-    'Statut':           { select: { name: get('f-statut') || 'À lire' } },
-    'Date de lecture':  { rich_text: [{ text: { content: dateLue } }] },
-    'Fiche de lecture': { rich_text: [{ text: { content: get('f-fiche') } }] },
-  };
-  if (get('f-priorite')) props['Priorité'] = { select: { name: get('f-priorite') } };
-  if (get('f-note'))     props['Note']     = { select: { name: get('f-note') } };
-
-  try {
-    const res = await fetch(notionUrl(`/v1/pages/${pageId}`, cfg), {
-      method: 'PATCH',
-      headers: notionHeaders(cfg.token),
-      body: JSON.stringify({ properties: props })
-    });
-    if (res.ok) {
-      notionStatus.textContent = '✅ Statut & lecture mis à jour dans Notion !';
-      notionStatus.style.whiteSpace = 'normal';
-      setTimeout(() => { notionStatus.textContent = ''; notionStatus.style.whiteSpace = ''; }, 4000);
-    } else {
-      const err = await res.json().catch(() => ({}));
-      notionStatus.textContent = '🔴 Erreur Notion : ' + (err.message || res.status);
-    }
-  } catch(e) {
-    notionStatus.textContent = '🔴 Erreur réseau : ' + e.message;
+  if (_currentPageId) {
+    await updatePageFull(_currentPageId, cfg, sync);
+  } else {
+    await doSend(cfg, sync);
   }
 }
 
-export async function doSend(cfg, sync) {
-  const get = id => document.getElementById(id)?.value?.trim() || '';
-  const cb  = id => document.getElementById(id)?.checked || false;
-  const notionStatus = document.getElementById('notion-status');
-  let syncMsg = '';
-  if (sync.created.length > 0) syncMsg += ' Propriétés créées : ' + sync.created.join(', ') + '.';
-  if (sync.conflicts.length > 0) syncMsg += ' ⚠️ Conflits ignorés : ' + sync.conflicts.map(c => c.name).join(', ') + '.';
-
-  notionStatus.textContent = '🔄 Envoi en cours…';
-
+function buildProps(get, cb, sync) {
   const props = {
     'Nom':                 { title: [{ text: { content: get('f-titre') || '(sans titre)' } }] },
     'Auteur':              { rich_text: [{ text: { content: get('f-auteur') } }] },
@@ -268,10 +225,55 @@ export async function doSend(cfg, sync) {
     'Citations':           { rich_text: [{ text: { content: get('f-citations') } }] },
     'Commentaire':         { rich_text: [{ text: { content: get('f-comment') } }] },
   };
-
   for (const c of sync.conflicts) delete props[c.name];
   Object.keys(props).forEach(k => props[k] === undefined && delete props[k]);
+  return props;
+}
 
+export async function updatePageFull(pageId, cfg, sync) {
+  const get = id => document.getElementById(id)?.value?.trim() || '';
+  const cb  = id => document.getElementById(id)?.checked || false;
+  const notionStatus = document.getElementById('notion-status');
+  notionStatus.textContent = '🔄 Mise à jour en cours…';
+
+  const props = buildProps(get, cb, sync);
+  const body = { properties: props };
+  const coverImg = document.getElementById('cover-img');
+  if (coverImg.src && coverImg.style.display !== 'none') {
+    body.cover = { type: 'external', external: { url: coverImg.src } };
+  }
+
+  try {
+    const res = await fetch(notionUrl(`/v1/pages/${pageId}`, cfg), {
+      method: 'PATCH',
+      headers: notionHeaders(cfg.token),
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      notionStatus.textContent = '✅ Mis à jour dans Notion !';
+      notionStatus.style.whiteSpace = 'normal';
+      setTimeout(() => { notionStatus.textContent = ''; notionStatus.style.whiteSpace = ''; }, 5000);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      notionStatus.textContent = '🔴 Erreur Notion : ' + (err.message || res.status);
+      notionStatus.style.whiteSpace = 'normal';
+    }
+  } catch(e) {
+    notionStatus.textContent = '🔴 Erreur réseau : ' + e.message;
+  }
+}
+
+export async function doSend(cfg, sync) {
+  const get = id => document.getElementById(id)?.value?.trim() || '';
+  const cb  = id => document.getElementById(id)?.checked || false;
+  const notionStatus = document.getElementById('notion-status');
+  let syncMsg = '';
+  if (sync.created.length > 0) syncMsg += ' Propriétés créées : ' + sync.created.join(', ') + '.';
+  if (sync.conflicts.length > 0) syncMsg += ' ⚠️ Conflits ignorés : ' + sync.conflicts.map(c => c.name).join(', ') + '.';
+
+  notionStatus.textContent = '🔄 Envoi en cours…';
+
+  const props = buildProps(get, cb, sync);
   const body = { parent: { database_id: cfg.dbId }, properties: props };
   const coverImg = document.getElementById('cover-img');
   if (coverImg.src && coverImg.style.display !== 'none') {

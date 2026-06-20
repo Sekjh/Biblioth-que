@@ -24,6 +24,15 @@ export function setField(id, val) {
   el.classList.toggle('prefilled', !!(val && val.toString().trim()));
 }
 
+export function setFieldNotion(id, val) {
+  const el = document.getElementById(id);
+  el.value = val || '';
+  el.classList.remove('prefilled', 'ai-filled');
+  el.classList.toggle('notion-filled', !!(val && val.toString().trim()));
+}
+
+export function setLastIsbn(isbn) { _lastIsbn = isbn; }
+
 export function initThemes() {
   document.getElementById('f-theme').innerHTML = '<option value="">— Thème —</option>' +
     Object.keys(THEMES).map(t=>`<option value="${t}">${t}</option>`).join('');
@@ -158,6 +167,100 @@ export function fillForm(b) {
   document.getElementById('form-section').style.display = 'block';
   const outputSection = document.getElementById('output-section');
   if (outputSection) outputSection.style.display = 'none';
+}
+
+export function fillFormFromNotion(b) {
+  // ── Champs bibliographiques ──
+  setFieldNotion('f-titre', b.titre);
+  setFieldNotion('f-auteur', b.auteur);
+  setFieldNotion('f-nationalite', b.nationalite);
+  setFieldNotion('f-editeur', b.editeur);
+  setFieldNotion('f-collection-ed', b.collection);
+  setFieldNotion('f-isbn', b.isbn);
+  setFieldNotion('f-dateed', b.dateed);
+  setFieldNotion('f-datepub', b.datepub);
+  setFieldNotion('f-pages', b.pages);
+
+  // ── Champs lecture / statut ──
+  const setSelNotion = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = val || '';
+    el.classList.remove('prefilled', 'ai-filled');
+    el.classList.toggle('notion-filled', !!(val && val.trim()));
+  };
+  setSelNotion('f-statut', b.statut || 'À lire');
+  setSelNotion('f-priorite', b.priorite);
+  setSelNotion('f-note', b.note);
+  setSelNotion('f-etat', b.etat);
+
+  const moiEl = document.getElementById('f-datelu-mois');
+  moiEl.value = b.datem || '';
+  moiEl.classList.remove('prefilled');
+  moiEl.classList.toggle('notion-filled', !!(b.datem));
+
+  const anEl = document.getElementById('f-datelu-annee');
+  anEl.value = b.datey || '';
+  anEl.classList.remove('prefilled');
+  anEl.classList.toggle('notion-filled', !!(b.datey));
+
+  // ── Thème / Sous-thème ──
+  const themeEl = document.getElementById('f-theme');
+  themeEl.value = b.theme || '';
+  themeEl.classList.remove('prefilled', 'ai-filled');
+  themeEl.classList.toggle('notion-filled', !!(b.theme));
+  updateSousTheme();
+  const sousEl = document.getElementById('f-soustheme');
+  sousEl.value = b.soustheme || '';
+  sousEl.classList.remove('prefilled', 'ai-filled');
+  sousEl.classList.toggle('notion-filled', !!(b.soustheme));
+
+  // ── Champs texte libres ──
+  setFieldNotion('f-fiche', b.fiche);
+  setFieldNotion('f-citations', b.citations);
+  setFieldNotion('f-comment', b.commentaire);
+
+  // ── Checkbox collection ──
+  document.getElementById('f-collection').checked = b.fcollection || false;
+
+  // ── Réinitialisation UI accessoire ──
+  const themeStatus = document.getElementById('theme-ai-status');
+  const ficheStatus = document.getElementById('fiche-ai-status');
+  if (themeStatus) themeStatus.textContent = '';
+  if (ficheStatus) ficheStatus.textContent = '';
+
+  toggleLu();
+
+  // ── En-tête résultat ──
+  document.getElementById('found-title').textContent = b.titre || (b.isbn ? 'ISBN : ' + b.isbn : '');
+  document.getElementById('source-badge').textContent = 'Source : Notion';
+  _searchLog = [];
+
+  // ── Couverture ──
+  const img = document.getElementById('cover-img');
+  const coverBadge = document.getElementById('cover-src-badge');
+  if (b.couverture) {
+    img.src = b.couverture;
+    img.style.display = 'block';
+    img.classList.remove('prefilled');
+    img.classList.add('notion-filled');
+    if (coverBadge) coverBadge.textContent = 'Notion';
+  } else {
+    img.src = '';
+    img.style.display = 'none';
+    img.classList.remove('prefilled', 'notion-filled');
+  }
+
+  // ── Hint collection (informatif, sans écraser la valeur Notion) ──
+  const collectionHint = detectCollection(b);
+  document.getElementById('collection-hint').textContent =
+    collectionHint.detected ? `✦ (${collectionHint.reason})` : '';
+
+  document.getElementById('form-section').style.display = 'block';
+  const outputSection = document.getElementById('output-section');
+  if (outputSection) outputSection.style.display = 'none';
+
+  document.getElementById('btn-send-notion').textContent = 'Mettre à jour dans Notion';
 }
 
 export async function lookup(isbnArg = '') {

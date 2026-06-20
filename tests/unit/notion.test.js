@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -11,9 +11,13 @@ const dbFull          = JSON.parse(readFileSync(join(fixturesDir, 'notion-db-ful
 const dbMissingAuteur = JSON.parse(readFileSync(join(fixturesDir, 'notion-db-missing-auteur.json'), 'utf8'));
 const dbConflictPages = JSON.parse(readFileSync(join(fixturesDir, 'notion-db-conflict-pages.json'), 'utf8'));
 const queryEmpty      = JSON.parse(readFileSync(join(fixturesDir, 'notion-query-empty.json'), 'utf8'));
-const queryDuplicate  = JSON.parse(readFileSync(join(fixturesDir, 'notion-query-duplicate.json'), 'utf8'));
+const queryFound      = JSON.parse(readFileSync(join(fixturesDir, 'notion-query-found.json'), 'utf8'));
+const queryTwo        = JSON.parse(readFileSync(join(fixturesDir, 'notion-query-two-results.json'), 'utf8'));
 
-import { checkDuplicate, syncDatabaseProps, doSend } from '../../src/notion.js';
+import {
+  lookupFromNotion, syncDatabaseProps, doSend, updatePageFull, sendToNotion,
+  setCurrentPageId, clearCurrentPageId,
+} from '../../src/notion.js';
 
 const CFG = { token: 'ntn_x', dbId: 'abcdef1234567890abcdef1234567890', proxy: '' };
 
@@ -21,45 +25,65 @@ beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn());
 });
 
-// ─── checkDuplicate ───────────────────────────────────────────────────────────
+afterEach(() => {
+  clearCurrentPageId();
+});
 
-describe('checkDuplicate', () => {
-  test('retourne isDuplicate: false sans appeler fetch quand token est vide', async () => {
-    const result = await checkDuplicate('9782070360024', { token: '', dbId: 'db123', proxy: '' });
-    expect(result.isDuplicate).toBe(false);
+// ─── lookupFromNotion ─────────────────────────────────────────────────────────
+
+describe('lookupFromNotion', () => {
+  test('retourne found: false sans appeler fetch quand token est vide', async () => {
+    const result = await lookupFromNotion('9782070360024', { token: '', dbId: 'db123', proxy: '' });
+    expect(result.found).toBe(false);
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  test('retourne isDuplicate: false sans appeler fetch quand dbId est vide', async () => {
-    const result = await checkDuplicate('9782070360024', { token: 'ntn_x', dbId: '', proxy: '' });
-    expect(result.isDuplicate).toBe(false);
+  test('retourne found: false sans appeler fetch quand dbId est vide', async () => {
+    const result = await lookupFromNotion('9782070360024', { token: 'ntn_x', dbId: '', proxy: '' });
+    expect(result.found).toBe(false);
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  test('retourne isDuplicate: true avec title et pageId quand doublon trouvé', async () => {
-    fetch.mockResolvedValueOnce({ ok: true, json: async () => queryDuplicate });
-    const result = await checkDuplicate('9782070360024', CFG);
-    expect(result.isDuplicate).toBe(true);
-    expect(result.title).toBe('Le Capital');
-    expect(result.pageId).toBe('page-abc-123');
-  });
-
-  test('retourne isDuplicate: false quand résultats vides', async () => {
+  test('retourne found: false quand résultats vides', async () => {
     fetch.mockResolvedValueOnce({ ok: true, json: async () => queryEmpty });
-    const result = await checkDuplicate('9999999999999', CFG);
-    expect(result.isDuplicate).toBe(false);
+    const result = await lookupFromNotion('9999999999999', CFG);
+    expect(result.found).toBe(false);
   });
 
-  test('retourne isDuplicate: false sur erreur réseau (ne lève pas)', async () => {
+  test('retourne found: true avec book et pageId quand page trouvée', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => queryFound });
+    const result = await lookupFromNotion('9782070360024', CFG);
+    expect(result.found).toBe(true);
+    expect(result.pageId).toBe('page-abc-123');
+    expect(result.book.titre).toBe('Le Capital');
+    expect(result.book.auteur).toBe('Karl Marx');
+    expect(result.book.pages).toBe('900');
+    expect(result.book.theme).toBe('Histoire');
+    expect(result.book.statut).toBe('Lu');
+    expect(result.book.datem).toBe('Juin');
+    expect(result.book.datey).toBe('2024');
+    expect(result.book.couverture).toBe('https://covers.example.com/img.jpg');
+    expect(result.book.fromNotion).toBe(true);
+  });
+
+  test('prend le plus ancien quand plusieurs résultats', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => queryTwo });
+    const result = await lookupFromNotion('9782070360024', CFG);
+    expect(result.found).toBe(true);
+    expect(result.pageId).toBe('page-older-123');
+    expect(result.book.titre).toBe('Le Capital — original');
+  });
+
+  test('retourne found: false sur erreur réseau (ne lève pas)', async () => {
     fetch.mockRejectedValueOnce(new Error('DNS failure'));
-    const result = await checkDuplicate('9782070360024', CFG);
-    expect(result.isDuplicate).toBe(false);
+    const result = await lookupFromNotion('9782070360024', CFG);
+    expect(result.found).toBe(false);
   });
 
-  test('retourne isDuplicate: false sur réponse HTTP non-ok', async () => {
+  test('retourne found: false sur réponse HTTP non-ok', async () => {
     fetch.mockResolvedValueOnce({ ok: false, status: 401 });
-    const result = await checkDuplicate('9782070360024', CFG);
-    expect(result.isDuplicate).toBe(false);
+    const result = await lookupFromNotion('9782070360024', CFG);
+    expect(result.found).toBe(false);
   });
 });
 
@@ -118,7 +142,7 @@ describe('syncDatabaseProps', () => {
   });
 });
 
-// ─── doSend ──────────────────────────────────────────────────────────────────
+// ─── DOM commun aux tests doSend / updatePageFull / sendToNotion ──────────────
 
 const DOM_FORM = `
   <input id="f-titre" value="Le Capital" />
@@ -145,6 +169,8 @@ const DOM_FORM = `
   <img id="cover-img" src="" style="display:none" />
   <p id="notion-status"></p>
 `;
+
+// ─── doSend ──────────────────────────────────────────────────────────────────
 
 describe('doSend', () => {
   beforeEach(() => {
@@ -208,5 +234,79 @@ describe('doSend', () => {
     });
     await doSend(CFG, { created: [], conflicts: [] });
     expect(document.getElementById('notion-status').textContent).toContain('Propriété inconnue');
+  });
+});
+
+// ─── updatePageFull ───────────────────────────────────────────────────────────
+
+describe('updatePageFull', () => {
+  beforeEach(() => {
+    document.body.innerHTML = DOM_FORM;
+  });
+
+  test('envoie PATCH sur /v1/pages/{pageId} (pas de parent dans le body)', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    await updatePageFull('page-abc-123', CFG, { created: [], conflicts: [] });
+    const [url, opts] = fetch.mock.calls[0];
+    expect(opts.method).toBe('PATCH');
+    expect(url).toContain('/v1/pages/page-abc-123');
+    const body = JSON.parse(opts.body);
+    expect(body.parent).toBeUndefined();
+  });
+
+  test('inclut les propriétés du formulaire dans le PATCH', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    await updatePageFull('page-abc-123', CFG, { created: [], conflicts: [] });
+    const body = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(body.properties['Nom'].title[0].text.content).toBe('Le Capital');
+    expect(body.properties['Auteur'].rich_text[0].text.content).toBe('Karl Marx');
+    expect(body.properties['Pages'].number).toBe(900);
+  });
+
+  test('affiche le message de succès dans notion-status', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    await updatePageFull('page-abc-123', CFG, { created: [], conflicts: [] });
+    expect(document.getElementById('notion-status').textContent).toContain('Mis à jour dans Notion');
+  });
+});
+
+// ─── sendToNotion (routage _currentPageId) ────────────────────────────────────
+
+describe('sendToNotion — routage', () => {
+  beforeEach(() => {
+    document.body.innerHTML = DOM_FORM;
+    localStorage.clear();
+    localStorage.setItem('notion_token', 'ntn_testtoken');
+    localStorage.setItem('notion_dbid', 'abcdef1234567890abcdef1234567890');
+    localStorage.setItem('notion_proxy', 'https://proxy.test');
+    clearCurrentPageId();
+  });
+
+  test('sans _currentPageId → POST /v1/pages (création)', async () => {
+    fetch
+      .mockResolvedValueOnce({ ok: true, json: async () => dbFull })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    await sendToNotion();
+    const postCall = fetch.mock.calls.find(c => c[1]?.method === 'POST' && c[0].includes('/v1/pages'));
+    expect(postCall).toBeTruthy();
+    expect(document.getElementById('notion-status').textContent).toContain('Ajouté dans Notion');
+  });
+
+  test('avec _currentPageId → PATCH /v1/pages/{id} (mise à jour)', async () => {
+    setCurrentPageId('page-xyz-789');
+    fetch
+      .mockResolvedValueOnce({ ok: true, json: async () => dbFull })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    await sendToNotion();
+    const patchCall = fetch.mock.calls.find(c => c[1]?.method === 'PATCH' && c[0].includes('/v1/pages/page-xyz-789'));
+    expect(patchCall).toBeTruthy();
+    expect(document.getElementById('notion-status').textContent).toContain('Mis à jour dans Notion');
+  });
+
+  test("affiche un message de configuration quand le token est absent", async () => {
+    localStorage.removeItem('notion_token');
+    await sendToNotion();
+    expect(document.getElementById('notion-status').textContent).toContain('Configure');
+    expect(fetch).not.toHaveBeenCalled();
   });
 });
