@@ -6,6 +6,12 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ## [Unreleased]
 
+### Added
+- Suite de tests automatisés avec Vitest + jsdom : 107 tests couvrant les 7 modules (`isbn`, `themes`, `config`, `claude`, `fetchers`, `ui`, `notion`) et 2 flows d'intégration (lookup fallback BnF→OL→Google, détection de doublons Notion)
+- `package.json` avec scripts `npm test`, `npm run test:watch`, `npm run test:coverage`
+- `vitest.config.js`, `.gitignore`, `tests/fixtures/` (9 fichiers XML/JSON de bouchonnage), `tests/helpers/localStorage.js`
+- Section **Tests** dans `CLAUDE.md` : règles, commandes, stratégie de stub
+
 ---
 
 ## [0.50.2] — 2026-06-19

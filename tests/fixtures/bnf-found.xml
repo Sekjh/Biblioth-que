@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<searchRetrieveResponse xmlns="http://www.loc.gov/zing/srw/">
+  <numberOfRecords>1</numberOfRecords>
+  <records>
+    <record>
+      <recordData>
+        <record xmlns="http://www.bnf.fr/namespace/bibframe">
+          <datafield tag="200">
+            <subfield code="a">Le Capital</subfield>
+            <subfield code="e">Critique de l'économie politique</subfield>
+          </datafield>
+          <datafield tag="700">
+            <subfield code="a">Marx</subfield>
+            <subfield code="b">Karl</subfield>
+          </datafield>
+          <datafield tag="210">
+            <subfield code="c">Éditions Sociales</subfield>
+            <subfield code="d">1969</subfield>
+          </datafield>
+          <datafield tag="225">
+            <subfield code="a">Bibliothèque marxiste</subfield>
+          </datafield>
+          <datafield tag="215">
+            <subfield code="a">900</subfield>
+          </datafield>
+        </record>
+      </recordData>
+    </record>
+  </records>
+</searchRetrieveResponse>

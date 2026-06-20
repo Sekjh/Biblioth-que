@@ -119,6 +119,40 @@ git checkout dev
 
 ---
 
+## Tests
+
+Stack : **Vitest + jsdom** (`npm install` requis une fois après clone).
+
+### Avant chaque commit `feat:` ou `fix:`
+
+```
+npm test
+```
+
+### En cours de développement
+
+```
+npm run test:watch
+```
+
+### Couverture
+
+```
+npm run test:coverage
+# Ouvrir coverage/index.html pour inspecter
+```
+
+### Règles
+
+- Fonctions pures (`isbn.js`, `themes.js`, `config.js`) : env `node`, pas de DOM.
+- Fonctions avec DOM (`ui.js`, `notion.js` → `doSend`) : `// @vitest-environment jsdom` en tête de fichier.
+- Tout nouveau module → `tests/unit/<module>.test.js`.
+- Fixtures JSON/XML dans `tests/fixtures/`.
+- Préférer `vi.stubGlobal('fetch', vi.fn())` plutôt que `vi.mock()` un module entier — les parsers réels restent couverts.
+- Ne jamais committer `node_modules/` ni `coverage/` (dans `.gitignore`).
+
+---
+
 ## Git — Exécutable
 
 ```powershell
