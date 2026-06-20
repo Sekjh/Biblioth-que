@@ -64,3 +64,28 @@ button.outline { background: transparent; color: var(--text); border: 1px solid 
 .field:has(select.notion-filled) .lbl-src--notion,
 .field:has(textarea.notion-filled) .lbl-src--notion { display: inline; }
 .cover-img.notion-filled ~ .cover-src-badge { display: block; background: color-mix(in srgb, var(--bg2) 50%, #d97706 20%); color: color-mix(in srgb, var(--muted) 60%, #d97706 60%); }
+
+/* ── Documentation panel ─────────────────────────────────────────────── */
+.doc-section-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--muted);
+  margin: 1rem 0 0.5rem; padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+.doc-section-title:first-of-type { margin-top: 0; }
+.doc-list { font-size: 13px; line-height: 1.7; padding-left: 1.2rem; color: var(--text); margin-bottom: 0.25rem; }
+.doc-list li { margin-bottom: 2px; }
+.doc-list code, .doc-steps code {
+  font-family: 'Menlo', 'Courier New', monospace; font-size: 11px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 3px; padding: 1px 4px;
+}
+.doc-arch {
+  font-family: 'Menlo', 'Courier New', monospace; font-size: 11px; line-height: 1.7;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 0.75rem 1rem; white-space: pre; overflow-x: auto; color: var(--muted); margin-bottom: 0.25rem;
+}
+.doc-steps { font-size: 13px; line-height: 1.7; padding-left: 1.4rem; color: var(--text); }
+.doc-steps li { margin-bottom: 0.75rem; }
+.doc-steps li:last-child { margin-bottom: 0; }
+.doc-steps a { color: var(--text); }
+.doc-steps a:hover { opacity: 0.7; }

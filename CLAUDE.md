@@ -46,7 +46,10 @@ release: v0.50.1
 | `CHANGELOG.md` | À chaque commit sur `dev` — section `[Unreleased]` |
 | `index.html` ligne 12 | Uniquement lors d'une release |
 | `index.html` `#devlog` | Uniquement lors d'une release |
+| `index.html` `#doc-panel` | À chaque `feat:`, `### Changed` ou `### Removed` — mettre à jour la section Fonctionnalités |
 | Git tag | Uniquement lors d'une release sur `main` |
+
+> **Documentation in-app** : chaque commit de type `feat:` ou contenant une entrée `### Changed` / `### Removed` dans `CHANGELOG.md` doit s'accompagner d'une mise à jour de la section `Fonctionnalités` du panneau `#doc-panel` dans `index.html`.
 
 ---
 

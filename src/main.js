@@ -169,9 +169,26 @@ document.addEventListener('click', e => {
 });
 
 // Barre de navigation bas de page
-document.getElementById('btn-toggle-devlog').addEventListener('click', toggleDevlog);
-document.getElementById('btn-toggle-config').addEventListener('click', toggleConfig);
+document.getElementById('btn-toggle-devlog').addEventListener('click', () => {
+  document.getElementById('doc-panel').style.display = 'none';
+  document.getElementById('config-panel').style.display = 'none';
+  toggleDevlog();
+});
+document.getElementById('btn-toggle-config').addEventListener('click', () => {
+  document.getElementById('doc-panel').style.display = 'none';
+  toggleConfig();
+});
 document.getElementById('btn-close-devlog').addEventListener('click', toggleDevlog);
+
+function toggleDoc() {
+  const panel = document.getElementById('doc-panel');
+  const isVisible = panel.style.display !== 'none';
+  document.getElementById('devlog').style.display = 'none';
+  document.getElementById('config-panel').style.display = 'none';
+  panel.style.display = isVisible ? 'none' : 'block';
+}
+document.getElementById('btn-toggle-doc').addEventListener('click', toggleDoc);
+document.getElementById('btn-close-doc').addEventListener('click', toggleDoc);
 
 // Config panel
 document.getElementById('btn-save-config').addEventListener('click', saveConfig);

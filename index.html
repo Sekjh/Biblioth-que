@@ -203,6 +203,9 @@
   <button id="btn-toggle-config" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;width:auto;height:auto;padding:4px 8px;text-decoration:underline;text-underline-offset:3px;">
     ⚙ configuration
   </button>
+  <button id="btn-toggle-doc" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;width:auto;height:auto;padding:4px 8px;text-decoration:underline;text-underline-offset:3px;">
+    [doc]
+  </button>
 </div>
 
 <div id="devlog" style="display:none;max-width:600px;margin:0 auto 2rem;padding:0 1rem;">
@@ -245,6 +248,70 @@
       </div>
     </div>
     </div>
+  </div>
+</div>
+
+<!-- Documentation -->
+<div id="doc-panel" style="display:none;max-width:600px;margin:0 auto 2rem;padding:0 1rem;">
+  <div class="card">
+    <div style="padding-bottom:0.75rem;margin-bottom:0.75rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;">Documentation</span>
+      <button id="btn-close-doc" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:auto;height:auto;padding:0 4px;line-height:1;">✕</button>
+    </div>
+
+    <h3 class="doc-section-title">Fonctionnalités</h3>
+    <ul class="doc-list">
+      <li>Recherche par ISBN — validation checksum, conversion ISBN-13/10</li>
+      <li>Sources bibliographiques multi-moteurs : BnF (recommandée), OpenLibrary, Google Books</li>
+      <li>Enrichissement automatique avec fallback (champs critiques : titre, auteur, éditeur, pages)</li>
+      <li>Gestion de couverture via OpenLibrary Covers — badge de source</li>
+      <li>Suggestions de thème et sous-thème via IA (Claude Haiku)</li>
+      <li>Génération de fiche de lecture via IA (Claude Sonnet)</li>
+      <li>Intégration Notion : pré-vérification ISBN, création et mise à jour de page</li>
+      <li>Synchronisation automatique du schéma Notion (propriétés manquantes créées)</li>
+      <li>Badges de source par champ (ISBN, Notion, IA) + journal de recherche en popover</li>
+      <li>Détection automatique des éditions spéciales et collections</li>
+      <li>Support iOS Shortcuts via paramètre URL <code>?isbn=XXXXX</code></li>
+      <li>Interface dark mode, responsive mobile</li>
+    </ul>
+
+    <h3 class="doc-section-title">Architecture</h3>
+    <pre class="doc-arch">APIs bibliographiques
+  BnF (SRU/UNIMARC) ──┐
+  OpenLibrary (JSON) ──┤──▶ GEBIBLIPE
+  Google Books (JSON) ─┘    (navigateur SPA)
+  OL Covers (images) ──────▶ clés en localStorage
+
+GEBIBLIPE ──▶ Claude API
+               claude-haiku-4-5 (thèmes)
+               claude-sonnet-4-6 (fiches)
+
+GEBIBLIPE ──▶ Cloudflare Worker ──▶ Notion API
+  (proxy CORS, optionnel)            Base de données Notion</pre>
+
+    <h3 class="doc-section-title">Guide d'initialisation</h3>
+    <ol class="doc-steps">
+      <li>
+        <strong>Base Notion</strong><br>
+        Créer une page de base de données vierge dans Notion (sans modèle). Copier l'identifiant de 32 caractères depuis l'URL de la page. L'application crée automatiquement toutes les propriétés nécessaires lors du premier enregistrement.
+      </li>
+      <li>
+        <strong>Intégration Notion</strong><br>
+        Aller sur <a href="https://www.notion.so/my-integrations" target="_blank" rel="noopener">notion.so/my-integrations</a> → "New integration". Nommer l'intégration (ex. "GEBIBLIPE"), sélectionner l'espace de travail, copier le token (<code>ntn_…</code> ou <code>secret_…</code>). Dans Notion, ouvrir la base → "…" → "Ajouter des connexions" → sélectionner l'intégration.
+      </li>
+      <li>
+        <strong>Proxy Cloudflare (recommandé)</strong><br>
+        Les navigateurs bloquent les appels directs à l'API Notion (CORS). Créer un compte Cloudflare gratuit → Workers → nouveau worker avec un script de proxy CORS vers <code>api.notion.com</code>. Copier l'URL du worker (ex. <code>https://xxx.workers.dev</code>).
+      </li>
+      <li>
+        <strong>Clé API Anthropic (optionnelle)</strong><br>
+        Pour les fonctionnalités IA (suggestion de thème, génération de fiche). Créer un compte sur <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a> → API Keys. Le token commence par <code>sk-ant-</code>.
+      </li>
+      <li>
+        <strong>Configuration dans l'appli</strong><br>
+        Cliquer sur <strong>⚙ configuration</strong> en bas de page. Renseigner les champs (proxy, token, database ID, clé Anthropic). Cliquer sur "Vérifier et enregistrer" — l'application synchronise automatiquement le schéma de la base Notion.
+      </li>
+    </ol>
   </div>
 </div>
 
