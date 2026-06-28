@@ -115,3 +115,45 @@ describe('Credentials absents', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+// ─── Vérification doublon au moment de l'envoi ───────────────────────────────
+// Ces tests vérifient les blocs constitutifs du handler btn-send-notion :
+// lookupFromNotion → doublon trouvé → setCurrentPageId → sendToNotion = PATCH
+
+describe('Flux doublon send-time — blocs constitutifs', () => {
+  test('lookupFromNotion retourne found:true avec pageId quand un doublon existe', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => queryFound });
+    const result = await lookupFromNotion('9782070360024', { token: TOKEN, dbId: DBID, proxy: 'https://proxy.test' });
+    expect(result.found).toBe(true);
+    expect(result.pageId).toBeTruthy();
+    expect(result.book.titre).toBe('Le Capital');
+  });
+
+  test('setCurrentPageId puis sendToNotion envoie PATCH (mise à jour complète)', async () => {
+    fetch
+      .mockResolvedValueOnce({ ok: true, json: async () => dbFull })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    setCurrentPageId('page-doublon-xyz');
+    await sendToNotion();
+    expect(document.getElementById('notion-status').textContent).toContain('Mis à jour dans Notion');
+    const patchCall = fetch.mock.calls.find(c => c[1]?.method === 'PATCH' && c[0].includes('/v1/pages/page-doublon-xyz'));
+    expect(patchCall).toBeTruthy();
+  });
+
+  test('clearCurrentPageId puis sendToNotion envoie POST (nouvelle entrée)', async () => {
+    fetch
+      .mockResolvedValueOnce({ ok: true, json: async () => dbFull })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    clearCurrentPageId();
+    await sendToNotion();
+    expect(document.getElementById('notion-status').textContent).toContain('Ajouté dans Notion');
+    const postCall = fetch.mock.calls.find(c => c[1]?.method === 'POST' && c[0].includes('/v1/pages'));
+    expect(postCall).toBeTruthy();
+  });
+
+  test('lookupFromNotion retourne found:false quand pas de doublon', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => queryEmpty });
+    const result = await lookupFromNotion('9999999999999', { token: TOKEN, dbId: DBID, proxy: 'https://proxy.test' });
+    expect(result.found).toBe(false);
+  });
+});

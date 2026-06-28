@@ -8,6 +8,13 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ---
 
+## [0.54.0] — 2026-06-28
+
+### Added
+- Vérification des doublons Notion au moment du clic sur "Envoyer dans Notion" : si un livre avec le même ISBN existe déjà dans la base, l'utilisateur peut choisir entre mettre à jour la fiche existante, créer une nouvelle entrée, ou annuler
+
+---
+
 ## [0.53.0] — 2026-06-20
 
 ### Added
@@ -155,7 +162,9 @@ Versioning : [SemVer](https://semver.org/lang/fr/)
 
 ---
 
-[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.52.0...HEAD
+[Unreleased]: https://github.com/Sekjh/Biblioth-que/compare/v0.54.0...HEAD
+[0.54.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.53.0...v0.54.0
+[0.53.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.52.0...v0.53.0
 [0.52.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.51.0...v0.52.0
 [0.51.0]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.3...v0.51.0
 [0.50.3]: https://github.com/Sekjh/Biblioth-que/compare/v0.50.2...v0.50.3

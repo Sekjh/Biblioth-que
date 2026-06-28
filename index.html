@@ -9,7 +9,7 @@
 <body>
 
 <div class="container">
-  <h1>GEBIBLIPE <span>Gestionnaire de bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.53.0 — 2026-06-20</span></h1>
+  <h1>GEBIBLIPE <span>Gestionnaire de bibliothèque personnelle</span> <span style="font-size:11px;opacity:0.35;margin-left:4px;">v0.54.0 — 2026-06-28</span></h1>
 
   <div class="card">
     <div class="input-row">
@@ -216,6 +216,14 @@
     </div>
         <div style="font-size:12px;line-height:1.8;">
       <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;color:var(--text);">v0.54.0</span>
+        <span style="color:var(--muted);margin-left:6px;">2026-06-28</span>
+        <div style="margin-top:8px;">
+          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">Notion</div>
+          <div style="color:var(--muted);">• Vérification des doublons au moment de l'envoi : si l'ISBN existe déjà dans Notion, choix entre mettre à jour la fiche, créer une nouvelle entrée ou annuler</div>
+        </div>
+      </div>
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;color:var(--text);">v0.53.0</span>
         <span style="color:var(--muted);margin-left:6px;">2026-06-20</span>
         <div style="margin-top:8px;">
@@ -224,7 +232,7 @@
           <div style="color:var(--muted);">• Exclusion mutuelle des panneaux de navigation (changelog, configuration, doc)</div>
         </div>
       </div>
-      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);">
+      <div style="padding:0.75rem 1rem;">
         <span style="font-weight:600;color:var(--text);">v0.52.0</span>
         <span style="color:var(--muted);margin-left:6px;">2026-06-20</span>
         <div style="margin-top:8px;">
@@ -232,18 +240,6 @@
           <div style="color:var(--muted);">• Pré-vérification Notion avant recherche bibliographique : détecte les fiches existantes et propose de les charger</div>
           <div style="color:var(--muted);">• Chargement depuis Notion avec badges ambrés par champ ; bouton devient "Mettre à jour dans Notion"</div>
           <div style="color:var(--muted);">• Bouton "Compléter les champs avec les sources bibliothéquaires" pour enrichir sans écraser les données Notion</div>
-          <div style="color:var(--muted);">• Suppression du contrôle doublon tardif : la vérification se fait désormais en amont</div>
-        </div>
-      </div>
-      <div style="padding:0.75rem 1rem;">
-        <span style="font-weight:600;color:var(--text);">v0.51.0</span>
-        <span style="color:var(--muted);margin-left:6px;">2026-06-20</span>
-        <div style="margin-top:8px;">
-          <div style="font-weight:500;color:var(--text);margin-bottom:3px;">UX & IA</div>
-          <div style="color:var(--muted);">• Fiches générées avec Claude Sonnet (au lieu de Haiku) ; prompt enrichi avec éditeur et collection</div>
-          <div style="color:var(--muted);">• Badges source par champ (BnF 13, OL, Google) et popover détaillé des sources consultées</div>
-          <div style="color:var(--muted);">• Enrichissement multi-sources : champs vides complétés depuis les autres sources disponibles</div>
-          <div style="color:var(--muted);">• Reset complet du formulaire au changement d'ISBN ; bouton Rechercher grisé si même ISBN</div>
         </div>
       </div>
     </div>

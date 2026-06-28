@@ -1,5 +1,5 @@
 import { initThemes, lookup, updateSousTheme, toggleLu, toggleDevlog, suggestTheme, generateFiche, toggleSourcePopover, getLastIsbn, setLastIsbn, fillFormFromNotion, setStatus, complementFromSources } from './ui.js';
-import { sendToNotion, saveConfig, toggleConfig, lookupFromNotion, setCurrentPageId, clearCurrentPageId } from './notion.js';
+import { sendToNotion, saveConfig, toggleConfig, lookupFromNotion, setCurrentPageId, clearCurrentPageId, getCurrentPageId } from './notion.js';
 import { validateIsbn } from './isbn.js';
 import { getConfig } from './config.js';
 
@@ -96,6 +96,45 @@ function showNotionChoice(result, isbn) {
   document.getElementById('btn-lookup').disabled = false;
 }
 
+function showDuplicateOnSendChoice(result) {
+  const notionStatus = document.getElementById('notion-status');
+  notionStatus.innerHTML = '';
+
+  const msg = document.createElement('span');
+  msg.textContent = `⚠️ "${result.book.titre || 'Cette entrée'}" existe déjà dans ta bibliothèque Notion.`;
+  notionStatus.appendChild(msg);
+  notionStatus.appendChild(document.createElement('br'));
+
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;';
+
+  const btnUpdate = document.createElement('button');
+  btnUpdate.textContent = 'Mettre à jour la fiche existante';
+  btnUpdate.style.cssText = 'height:34px;font-size:13px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);padding:0 1rem;cursor:pointer;width:auto;';
+  btnUpdate.addEventListener('click', () => {
+    setCurrentPageId(result.pageId);
+    notionStatus.innerHTML = '';
+    sendToNotion();
+  });
+
+  const btnCreate = document.createElement('button');
+  btnCreate.textContent = 'Créer une nouvelle entrée';
+  btnCreate.style.cssText = 'height:34px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;width:auto;';
+  btnCreate.addEventListener('click', () => {
+    clearCurrentPageId();
+    notionStatus.innerHTML = '';
+    sendToNotion();
+  });
+
+  const btnCancel = document.createElement('button');
+  btnCancel.textContent = 'Annuler';
+  btnCancel.style.cssText = 'height:34px;font-size:13px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;cursor:pointer;width:auto;';
+  btnCancel.addEventListener('click', () => { notionStatus.textContent = ''; });
+
+  btnRow.append(btnUpdate, btnCreate, btnCancel);
+  notionStatus.appendChild(btnRow);
+}
+
 // ── ISBN input ──────────────────────────────────────────────────────────────
 const isbnInput = document.getElementById('isbn-input');
 const btnLookup = document.getElementById('btn-lookup');
@@ -159,7 +198,22 @@ document.getElementById('btn-clear-fiche').addEventListener('click', () => {
 });
 
 // Envoi Notion
-document.getElementById('btn-send-notion').addEventListener('click', sendToNotion);
+document.getElementById('btn-send-notion').addEventListener('click', async () => {
+  const isbn = document.getElementById('f-isbn')?.value?.trim().replace(/[-\s]/g, '');
+  if (!getCurrentPageId() && isbn) {
+    const cfg = getConfig();
+    if (cfg.token && cfg.dbId) {
+      document.getElementById('notion-status').textContent = '🔄 Vérification des doublons…';
+      const result = await lookupFromNotion(isbn, cfg);
+      if (result.found) {
+        showDuplicateOnSendChoice(result);
+        return;
+      }
+      document.getElementById('notion-status').textContent = '';
+    }
+  }
+  sendToNotion();
+});
 
 // Source popover
 document.getElementById('source-badge').addEventListener('click', toggleSourcePopover);
